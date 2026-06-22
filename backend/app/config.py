@@ -69,13 +69,10 @@ class Settings(BaseSettings):
     KINDRED_MAX_PHOTOS: int = 6
     KINDRED_PLUS_MAX_PHOTOS: int = 6
 
-    @field_validator("ALLOWED_ORIGINS", mode="before")
-    @classmethod
-    def parse_origins(cls, v):
-        if isinstance(v, str):
-            return [origin.strip() for origin in v.split(",")]
-        return v
-
+    @property
+    def allowed_origins_list(self) -> List[str]:
+        return [o.strip() for o in self.ALLOWED_ORIGINS.split(",") if o.strip()]
+    
     @property
     def is_production(self) -> bool:
         return self.APP_ENV == "production"
