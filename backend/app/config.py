@@ -56,10 +56,7 @@ class Settings(BaseSettings):
 
     # ── CORS ───────────────────────────────────────────────────
     FRONTEND_URL: str = "http://localhost:5500"
-    ALLOWED_ORIGINS: str = "
-        http://localhost:5500,
-        http://localhost:8000,
-        https://mellow.app"
+    ALLOWED_ORIGINS: str = "http://localhost:5500,http://localhost:8000,https://mellow.app"
 
     # ── Rate Limiting ──────────────────────────────────────────
     RATE_LIMIT_PER_MINUTE: int = 60
