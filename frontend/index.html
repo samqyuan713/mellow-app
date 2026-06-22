@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"/>
+<meta name="mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="theme-color" content="#3D2645"/>
+<meta name="description" content="Mellow — designed for people who know what they want, and what they don't."/>
+<link rel="manifest" href="manifest.json"/>
+<title>Mellow</title>
+<link rel="stylesheet" href="css/main.css"/>
+<link rel="stylesheet" href="css/auth.css"/>
+<link rel="stylesheet" href="css/discover.css"/>
+<link rel="stylesheet" href="css/messages.css"/>
+</head>
+<body>
+
+<!-- ════════════════════════════════════════════════════
+     ICON SPRITE — minimal line icons, stroke = currentColor
+     ════════════════════════════════════════════════════ -->
+<svg style="display:none" aria-hidden="true">
+  <defs>
+    <symbol id="i-back" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></symbol>
+    <symbol id="i-chevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></symbol>
+    <symbol id="i-heart" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1-1.1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.8 1-1a5.5 5.5 0 0 0 0-7.8z"/></symbol>
+    <symbol id="i-x" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6L6 18M6 6l12 12"/></symbol>
+    <symbol id="i-star" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l2.6 6.1 6.4.5-4.9 4.3 1.5 6.3L12 16l-5.6 3.2 1.5-6.3-4.9-4.3 6.4-.5z"/></symbol>
+    <symbol id="i-rewind" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7M3 4v5h5"/></symbol>
+    <symbol id="i-sliders" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 6h16M4 12h10M4 18h6"/><circle cx="17" cy="6" r="2"/><circle cx="13" cy="12" r="2"/><circle cx="9" cy="18" r="2"/></symbol>
+    <symbol id="i-bell" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8a6 6 0 1 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.7 21a2 2 0 0 1-3.4 0"/></symbol>
+    <symbol id="i-send" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 2L11 13"/><path d="M22 2l-7 20-4-9-9-4z"/></symbol>
+    <symbol id="i-camera" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></symbol>
+    <symbol id="i-edit" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.1 2.1 0 0 1 3 3L12 15l-4 1 1-4z"/></symbol>
+    <symbol id="i-plus" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></symbol>
+    <symbol id="i-shield" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l8 4v6c0 5-3.5 8.5-8 10-4.5-1.5-8-5-8-10V6z"/></symbol>
+    <symbol id="i-logout" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><path d="M16 17l5-5-5-5M21 12H9"/></symbol>
+    <symbol id="i-trash" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2m2 0v14a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V6z"/></symbol>
+    <symbol id="i-flame" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 14.5A4 4 0 1 0 16 14c0-2-2-3.5-2-6 0 0-4 2-4 6-1.5-1-1.5-3-1.5-3S6 13 8.5 14.5z"/></symbol>
+    <symbol id="i-chat" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.4 8.4 0 0 1-9 8.4A8.5 8.5 0 1 1 21 11.5z"/></symbol>
+    <symbol id="i-user" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 4-6 8-6s8 2 8 6"/></symbol>
+    <symbol id="i-eye-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3l18 18M10.6 10.6A2 2 0 0 0 13.4 13.4M9.4 5.5A9.6 9.6 0 0 1 12 5c5 0 9 4 10 7a11.7 11.7 0 0 1-2.1 3.2M6.1 6.1A11.6 11.6 0 0 0 2 12c1 3 5 7 10 7 1 0 1.9-.1 2.8-.4"/></symbol>
+    <symbol id="i-card" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/></symbol>
+    <symbol id="i-flag" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 22V4"/><path d="M4 4h12l-2 4 2 4H4"/></symbol>
+    <symbol id="i-block" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M5.5 5.5l13 13"/></symbol>
+    <symbol id="i-leaf" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21c-4-2-8-6-8-12 6 0 10 4 12 8 2-4 0-9-4-12 8 0 12 6 12 12-4 4-8 4-12 4z"/></symbol>
+    <symbol id="i-search" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="7"/><path d="M21 21l-4.3-4.3"/></symbol>
+  </defs>
+</svg>
+
+<div id="app">
+
+  <!-- ════════════════════════════════════════════════
+       WELCOME
+       ════════════════════════════════════════════════ -->
+  <div class="screen welcome-screen active" id="screen-welcome">
+    <div class="welcome-content">
+      <div class="welcome-mark"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#CFA052" stroke-width="2"><use href="#i-leaf"/></svg></div>
+      <div class="welcome-title">Find your<br/><em>mellow</em> spirit.</div>
+      <p class="welcome-tag">A quieter kind of dating — for people who've lived a little, and know what they're looking for now.</p>
+      <div class="welcome-actions">
+        <button class="btn btn-rose" data-nav="register">Create your account</button>
+        <button class="btn btn-outline" data-nav="login">I already have an account</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════
+       LOGIN
+       ════════════════════════════════════════════════ -->
+  <div class="screen auth-screen" id="screen-login">
+    <div class="auth-header">
+      <span class="eyebrow">Welcome back</span>
+      <div class="display">Sign in to Mellow</div>
+      <p class="body-text">Pick up right where you left off.</p>
+    </div>
+    <div class="auth-body">
+      <form id="form-login">
+        <div class="field">
+          <label for="login-email">Email address</label>
+          <input type="email" id="login-email" placeholder="you@example.com" autocomplete="email" required/>
+          <div class="field-error">Enter a valid email address.</div>
+        </div>
+        <div class="field">
+          <label for="login-password">Password</label>
+          <input type="password" id="login-password" placeholder="••••••••" autocomplete="current-password" required/>
+          <div class="field-error">Incorrect email or password.</div>
+        </div>
+        <span class="forgot-link" data-nav="forgot">Forgot password?</span>
+        <button type="submit" class="btn btn-rose">Sign in</button>
+      </form>
+      <div class="auth-divider">or</div>
+      <button class="btn btn-google" id="btn-google-login">Continue with Google</button>
+    </div>
+    <div class="auth-switch">New to Mellow? <a data-nav="register">Create an account</a></div>
+    <div style="height:24px"></div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════
+       REGISTER
+       ════════════════════════════════════════════════ -->
+  <div class="screen auth-screen" id="screen-register">
+    <div class="auth-header">
+      <span class="eyebrow">Begin your chapter</span>
+      <div class="display">Create your account</div>
+      <p class="body-text">It takes about five minutes to set up.</p>
+    </div>
+    <div class="auth-body">
+      <form id="form-register">
+        <div class="field">
+          <label for="reg-name">First name</label>
+          <input type="text" id="reg-name" placeholder="How should we call you?" autocomplete="given-name" required/>
+          <div class="field-error">Please enter at least 2 characters.</div>
+        </div>
+        <div class="field">
+          <label for="reg-email">Email address</label>
+          <input type="email" id="reg-email" placeholder="you@example.com" autocomplete="email" required/>
+          <div class="field-error">Enter a valid email address.</div>
+        </div>
+        <div class="field">
+          <label for="reg-password">Password</label>
+          <input type="password" id="reg-password" placeholder="At least 8 characters" autocomplete="new-password" required/>
+          <div class="field-hint">Use 8+ characters with a number and an uppercase letter.</div>
+          <div class="field-error">Password doesn't meet the requirements yet.</div>
+        </div>
+        <button type="submit" class="btn btn-rose" style="margin-top:8px">Create account</button>
+      </form>
+      <div class="auth-divider">or</div>
+      <button class="btn btn-google" id="btn-google-register">Continue with Google</button>
+      <p class="tiny" style="text-align:center;margin-top:18px;line-height:1.6">
+        By continuing, you agree to Mellow's Terms of Service and Privacy Policy.
+      </p>
+    </div>
+    <div class="auth-switch">Already a member? <a data-nav="login">Sign in</a></div>
+    <div style="height:24px"></div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════
+       FORGOT PASSWORD
+       ════════════════════════════════════════════════ -->
+  <div class="screen auth-screen" id="screen-forgot">
+    <div class="back-row">
+      <button class="back-btn" data-nav="login"><svg width="18" height="18"><use href="#i-back"/></svg></button>
+      <div class="display">Reset password</div>
+    </div>
+    <div class="auth-body">
+      <p class="body-text" style="margin-bottom:20px">Enter the email on your account and we'll send a link to reset your password.</p>
+      <form id="form-forgot">
+        <div class="field">
+          <label for="forgot-email">Email address</label>
+          <input type="email" id="forgot-email" placeholder="you@example.com" autocomplete="email" required/>
+        </div>
+        <button type="submit" class="btn btn-rose">Send reset link</button>
+      </form>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════
+       ONBOARDING — multi-step profile creation
+       ════════════════════════════════════════════════ -->
+  <div class="screen" id="screen-onboard">
+    <div class="onboard-progress">
+      <div class="seg active" data-seg="1"></div>
+      <div class="seg" data-seg="2"></div>
+      <div class="seg" data-seg="3"></div>
+      <div class="seg" data-seg="4"></div>
+    </div>
+
+    <!-- Step 1: Basics -->
+    <div class="onboard-step" data-step="1">
+      <div class="onboard-head">
+        <span class="eyebrow">Step 1 of 4</span>
+        <div class="display">The basics</div>
+      </div>
+      <div class="onboard-body">
+        <div class="field">
+          <label for="ob-age">Your age</label>
+          <input type="number" id="ob-age" placeholder="e.g. 47" min="30" max="80" inputmode="numeric"/>
+        </div>
+        <div class="field">
+          <label for="ob-city">Where are you based?</label>
+          <input type="text" id="ob-city" placeholder="City"/>
+        </div>
+        <div class="field">
+          <label>I am a</label>
+          <div class="chip-group" data-chips="gender" data-mode="single">
+            <div class="chip" data-value="woman">Woman</div>
+            <div class="chip" data-value="man">Man</div>
+            <div class="chip" data-value="non-binary">Non-binary</div>
+          </div>
+        </div>
+        <div class="field">
+          <label>Looking to meet</label>
+          <div class="chip-group" data-chips="seeking" data-mode="single">
+            <div class="chip" data-value="men">Men</div>
+            <div class="chip" data-value="women">Women</div>
+            <div class="chip" data-value="everyone">Everyone</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 2: Life stage -->
+    <div class="onboard-step" data-step="2" hidden>
+      <div class="onboard-head">
+        <span class="eyebrow">Step 2 of 4</span>
+        <div class="display">Where you are now</div>
+      </div>
+      <div class="onboard-body">
+        <div class="field">
+          <label>Marital history</label>
+          <div class="option-card" data-group="marital_history" data-value="divorced">
+            <span class="opt-text"><span class="opt-title">Divorced</span></span>
+            <span class="opt-check"><svg width="12" height="12"><use href="#i-check"/></svg></span>
+          </div>
+          <div class="option-card" data-group="marital_history" data-value="widowed">
+            <span class="opt-text"><span class="opt-title">Widowed</span></span>
+            <span class="opt-check"><svg width="12" height="12"><use href="#i-check"/></svg></span>
+          </div>
+          <div class="option-card" data-group="marital_history" data-value="separated">
+            <span class="opt-text"><span class="opt-title">Separated</span></span>
+            <span class="opt-check"><svg width="12" height="12"><use href="#i-check"/></svg></span>
+          </div>
+          <div class="option-card" data-group="marital_history" data-value="never-married">
+            <span class="opt-text"><span class="opt-title">Never married</span></span>
+            <span class="opt-check"><svg width="12" height="12"><use href="#i-check"/></svg></span>
+          </div>
+        </div>
+        <div class="field">
+          <label>Children</label>
+          <div class="chip-group" data-chips="has_children" data-mode="single">
+            <div class="chip" data-value="yes">I have children</div>
+            <div class="chip" data-value="no">No children</div>
+          </div>
+        </div>
+        <div class="field">
+          <label>What are you looking for?</label>
+          <div class="option-card" data-group="relationship_goal" data-value="serious">
+            <span class="opt-text"><span class="opt-title">A serious relationship</span><span class="opt-desc">Open to commitment, taking it at the right pace</span></span>
+            <span class="opt-check"><svg width="12" height="12"><use href="#i-check"/></svg></span>
+          </div>
+          <div class="option-card" data-group="relationship_goal" data-value="companionship">
+            <span class="opt-text"><span class="opt-title">Companionship</span><span class="opt-desc">Someone to share life's moments with</span></span>
+            <span class="opt-check"><svg width="12" height="12"><use href="#i-check"/></svg></span>
+          </div>
+          <div class="option-card" data-group="relationship_goal" data-value="unsure">
+            <span class="opt-text"><span class="opt-title">Still figuring it out</span><span class="opt-desc">Open to where things go</span></span>
+            <span class="opt-check"><svg width="12" height="12"><use href="#i-check"/></svg></span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 3: About you -->
+    <div class="onboard-step" data-step="3" hidden>
+      <div class="onboard-head">
+        <span class="eyebrow">Step 3 of 4</span>
+        <div class="display">A little about you</div>
+      </div>
+      <div class="onboard-body">
+        <div class="field">
+          <label for="ob-bio">Your bio</label>
+          <textarea id="ob-bio" rows="4" maxlength="500" placeholder="Share a bit about who you are, what brings you joy, or what you're hoping to find here..."></textarea>
+          <div class="field-hint" id="ob-bio-count">0 / 500</div>
+        </div>
+        <div class="field">
+          <label for="ob-occupation">Occupation</label>
+          <input type="text" id="ob-occupation" placeholder="e.g. Architect"/>
+        </div>
+        <div class="field">
+          <label>Interests <span style="color:var(--ink-faint);font-weight:400">(pick up to 6)</span></label>
+          <div class="chip-group" data-chips="interests" data-mode="multi" data-max="6">
+            <div class="chip" data-value="travel">Travel</div>
+            <div class="chip" data-value="cooking">Cooking</div>
+            <div class="chip" data-value="hiking">Hiking</div>
+            <div class="chip" data-value="reading">Reading</div>
+            <div class="chip" data-value="music">Live music</div>
+            <div class="chip" data-value="art">Art &amp; museums</div>
+            <div class="chip" data-value="wine">Wine tasting</div>
+            <div class="chip" data-value="gardening">Gardening</div>
+            <div class="chip" data-value="golf">Golf</div>
+            <div class="chip" data-value="dancing">Dancing</div>
+            <div class="chip" data-value="volunteering">Volunteering</div>
+            <div class="chip" data-value="grandkids">Time with grandkids</div>
+          </div>
+          <div class="interest-counter"><span id="interest-count">0</span> / 6 selected</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Step 4: Photos -->
+    <div class="onboard-step" data-step="4" hidden>
+      <div class="onboard-head">
+        <span class="eyebrow">Step 4 of 4</span>
+        <div class="display">Add a photo</div>
+      </div>
+      <div class="onboard-body">
+        <p class="body-text" style="margin-bottom:16px">A clear, recent photo of yourself helps people feel they're meeting a real person. You can always add more later.</p>
+        <div class="photo-grid" id="onboard-photo-grid">
+          <div class="photo-slot" data-slot="0"><span class="add-icon"><svg width="26" height="26"><use href="#i-camera"/></svg></span><input type="file" accept="image/*" hidden/></div>
+          <div class="photo-slot" data-slot="1"><span class="add-icon"><svg width="26" height="26"><use href="#i-plus"/></svg></span><input type="file" accept="image/*" hidden/></div>
+        </div>
+        <p class="tiny" style="margin-top:14px">Free accounts can add up to 2 photos. Upgrade to Mellow for up to 6.</p>
+      </div>
+    </div>
+
+    <div class="onboard-foot">
+      <button class="btn btn-outline" id="ob-back" style="display:none"><svg width="18" height="18"><use href="#i-back"/></svg></button>
+      <button class="btn btn-primary" id="ob-next">Continue</button>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════
+       DISCOVER
+       ════════════════════════════════════════════════ -->
+  <div class="screen" id="screen-discover">
+    <div class="status-bar"><span id="clock-discover">9:41</span><span>Mellow</span></div>
+    <div class="discover-head">
+      <div class="display">Discover</div>
+      <div class="discover-head-icons">
+        <button id="btn-filters" aria-label="Filters"><svg width="18" height="18"><use href="#i-sliders"/></svg></button>
+        <button aria-label="Notifications"><svg width="18" height="18"><use href="#i-bell"/></svg></button>
+      </div>
+    </div>
+
+    <div class="card-stack" id="card-stack">
+      <!-- cards injected by JS -->
+      <div class="empty-state" id="discover-empty" hidden>
+        <div class="emoji">🌿</div>
+        <div class="display">You're all caught up</div>
+        <p class="body-text">No new profiles match your filters right now. Check back soon, or widen your preferences.</p>
+        <button class="btn btn-rose" id="empty-adjust-filters">Adjust filters</button>
+      </div>
+    </div>
+
+    <div class="discover-actions">
+      <button class="btn-icon" id="btn-rewind" aria-label="Rewind"><svg width="18" height="18"><use href="#i-rewind"/></svg></button>
+      <button class="btn-icon lg" id="btn-pass" aria-label="Pass"><svg width="22" height="22"><use href="#i-x"/></svg></button>
+      <button class="btn-icon gold" id="btn-superlike" aria-label="Super like"><svg width="18" height="18"><use href="#i-star"/></svg></button>
+      <button class="btn-icon lg rose" id="btn-like" aria-label="Like"><svg width="24" height="24"><use href="#i-heart"/></svg></button>
+    </div>
+
+    <div class="bottom-nav">
+      <button class="nav-btn active" data-nav="discover"><span class="nav-icon"><svg width="20" height="20"><use href="#i-flame"/></svg></span><span class="nav-label">Discover</span></button>
+      <button class="nav-btn" data-nav="matches" style="position:relative"><span class="nav-icon"><svg width="20" height="20"><use href="#i-chat"/></svg></span><span class="nav-label">Messages</span><span class="nav-badge" id="messages-badge" hidden></span></button>
+      <button class="nav-btn" data-nav="profile"><span class="nav-icon"><svg width="20" height="20"><use href="#i-user"/></svg></span><span class="nav-label">Profile</span></button>
+    </div>
+
+    <!-- Match celebration overlay -->
+    <div class="match-overlay" id="match-overlay">
+      <span class="eyebrow">A new connection</span>
+      <div class="display">It's a match</div>
+      <div class="match-avatars">
+        <div class="av" id="match-av-me"></div>
+        <div class="av" id="match-av-them"></div>
+      </div>
+      <p class="body-text" id="match-text">You and someone special just matched.</p>
+      <button class="btn btn-rose" id="match-send-msg">Send a message</button>
+      <button class="btn btn-outline" id="match-keep-going">Keep exploring</button>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════
+       MATCHES / MESSAGES LIST
+       ════════════════════════════════════════════════ -->
+  <div class="screen" id="screen-matches">
+    <div class="status-bar"><span id="clock-matches">9:41</span><span>Mellow</span></div>
+    <div class="page-head">
+      <div class="display">Messages</div>
+      <p class="body-text">Conversations with your matches</p>
+    </div>
+    <div class="scroll">
+      <div class="new-matches-row" id="new-matches-row"></div>
+      <div id="conv-list"></div>
+      <div class="empty-state" id="matches-empty" hidden>
+        <div class="emoji">💬</div>
+        <div class="display">No conversations yet</div>
+        <p class="body-text">When you match with someone, you'll be able to start chatting here.</p>
+      </div>
+      <div style="height:12px"></div>
+    </div>
+    <div class="bottom-nav">
+      <button class="nav-btn" data-nav="discover"><span class="nav-icon"><svg width="20" height="20"><use href="#i-flame"/></svg></span><span class="nav-label">Discover</span></button>
+      <button class="nav-btn active" data-nav="matches"><span class="nav-icon"><svg width="20" height="20"><use href="#i-chat"/></svg></span><span class="nav-label">Messages</span></button>
+      <button class="nav-btn" data-nav="profile"><span class="nav-icon"><svg width="20" height="20"><use href="#i-user"/></svg></span><span class="nav-label">Profile</span></button>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════
+       CHAT
+       ════════════════════════════════════════════════ -->
+  <div class="screen" id="screen-chat">
+    <div class="chat-header">
+      <button class="back-btn" data-nav="matches"><svg width="18" height="18"><use href="#i-back"/></svg></button>
+      <div class="chat-avatar" id="chat-avatar"></div>
+      <div class="chat-header-info">
+        <div class="name" id="chat-name">—</div>
+        <div class="status" id="chat-status"></div>
+      </div>
+      <button id="btn-chat-menu" aria-label="More"><svg width="16" height="16"><use href="#i-sliders"/></svg></button>
+    </div>
+    <div id="chat-limit-banner-wrap"></div>
+    <div class="chat-messages" id="chat-messages"></div>
+    <div class="chat-empty" id="chat-empty" hidden>
+      <div class="display">Say hello 👋</div>
+      <p class="body-text">This is the start of your conversation. A thoughtful opener goes a long way.</p>
+    </div>
+    <div class="chat-input-row" id="chat-input-row">
+      <input type="text" id="chat-input" placeholder="Write a message..." maxlength="1000"/>
+      <button class="chat-send-btn" id="chat-send" aria-label="Send"><svg width="17" height="17"><use href="#i-send"/></svg></button>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════
+       PROFILE / SETTINGS
+       ════════════════════════════════════════════════ -->
+  <div class="screen" id="screen-profile">
+    <div class="status-bar"><span id="clock-profile">9:41</span><span>Mellow</span></div>
+    <div class="scroll">
+      <div class="profile-hero">
+        <div class="profile-avatar" id="profile-avatar"></div>
+        <div class="profile-hero-info">
+          <div class="display" id="profile-name">—</div>
+          <p class="body-text" id="profile-meta">—</p>
+        </div>
+        <button class="profile-edit-btn" data-nav="profile-edit"><svg width="16" height="16"><use href="#i-edit"/></svg></button>
+      </div>
+
+      <div class="profile-completion" id="profile-completion-banner" hidden>
+        <div class="pc-text">
+          <div class="pc-title">Your profile is almost ready</div>
+          <div class="pc-sub">Complete it to start appearing in Discover</div>
+        </div>
+        <div class="pc-pct" id="pc-pct">—</div>
+      </div>
+
+      <div class="settings-section">
+        <div class="s-title">Membership</div>
+        <div class="settings-item" data-nav="subscription">
+          <div class="settings-icon" style="background:var(--gold-light);color:var(--gold)"><svg width="17" height="17"><use href="#i-star"/></svg></div>
+          <div class="settings-info">
+            <div class="settings-name" id="plan-name">Free plan</div>
+            <div class="settings-desc">Tap to view or change your plan</div>
+          </div>
+          <span class="settings-chevron"><svg width="14" height="14"><use href="#i-chevron"/></svg></span>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <div class="s-title">Discovery</div>
+        <div class="settings-item">
+          <div class="settings-icon" style="background:var(--sage-light);color:var(--sage)"><svg width="17" height="17"><use href="#i-eye-off"/></svg></div>
+          <div class="settings-info">
+            <div class="settings-name">Show my profile</div>
+            <div class="settings-desc">Appear in other people's Discover feed</div>
+          </div>
+          <button class="toggle-switch on" id="toggle-visibility"></button>
+        </div>
+        <div class="settings-item" data-nav="subscription">
+          <div class="settings-icon" style="background:var(--rose-light);color:var(--rose)"><svg width="17" height="17"><use href="#i-sliders"/></svg></div>
+          <div class="settings-info">
+            <div class="settings-name">Match preferences</div>
+            <div class="settings-desc">Age range and distance</div>
+          </div>
+          <span class="settings-chevron"><svg width="14" height="14"><use href="#i-chevron"/></svg></span>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <div class="s-title">Privacy &amp; safety</div>
+        <div class="settings-item" id="open-blocked-list">
+          <div class="settings-icon" style="background:var(--cream-deep);color:var(--ink-soft)"><svg width="17" height="17"><use href="#i-block"/></svg></div>
+          <div class="settings-info">
+            <div class="settings-name">Blocked users</div>
+            <div class="settings-desc">Manage people you've blocked</div>
+          </div>
+          <span class="settings-chevron"><svg width="14" height="14"><use href="#i-chevron"/></svg></span>
+        </div>
+        <div class="settings-item" id="open-data-export">
+          <div class="settings-icon" style="background:var(--cream-deep);color:var(--ink-soft)"><svg width="17" height="17"><use href="#i-shield"/></svg></div>
+          <div class="settings-info">
+            <div class="settings-name">Download my data</div>
+            <div class="settings-desc">Export a copy of your information</div>
+          </div>
+          <span class="settings-chevron"><svg width="14" height="14"><use href="#i-chevron"/></svg></span>
+        </div>
+      </div>
+
+      <div class="settings-section">
+        <div class="s-title">Account</div>
+        <div class="settings-item" id="btn-logout">
+          <div class="settings-icon" style="background:var(--cream-deep);color:var(--ink-soft)"><svg width="17" height="17"><use href="#i-logout"/></svg></div>
+          <div class="settings-info"><div class="settings-name">Log out</div></div>
+        </div>
+        <div class="settings-item danger" id="btn-delete-account">
+          <div class="settings-icon" style="background:#FBEAE7;color:var(--error)"><svg width="17" height="17"><use href="#i-trash"/></svg></div>
+          <div class="settings-info">
+            <div class="settings-name">Delete account</div>
+            <div class="settings-desc">Permanently remove your profile and data</div>
+          </div>
+        </div>
+      </div>
+      <div style="height:16px"></div>
+    </div>
+    <div class="bottom-nav">
+      <button class="nav-btn" data-nav="discover"><span class="nav-icon"><svg width="20" height="20"><use href="#i-flame"/></svg></span><span class="nav-label">Discover</span></button>
+      <button class="nav-btn" data-nav="matches"><span class="nav-icon"><svg width="20" height="20"><use href="#i-chat"/></svg></span><span class="nav-label">Messages</span></button>
+      <button class="nav-btn active" data-nav="profile"><span class="nav-icon"><svg width="20" height="20"><use href="#i-user"/></svg></span><span class="nav-label">Profile</span></button>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════
+       PROFILE EDIT
+       ════════════════════════════════════════════════ -->
+  <div class="screen" id="screen-profile-edit">
+    <div class="back-row">
+      <button class="back-btn" data-nav="profile"><svg width="18" height="18"><use href="#i-back"/></svg></button>
+      <div class="display">Edit profile</div>
+    </div>
+    <div class="scroll" style="padding:18px 22px 24px">
+
+      <div class="edit-section">
+        <div class="e-title">Photos</div>
+        <div class="photo-grid" id="edit-photo-grid"></div>
+        <p class="tiny" id="photo-limit-note" style="margin-top:10px"></p>
+      </div>
+
+      <div class="edit-section">
+        <div class="e-title">About you</div>
+        <div class="field">
+          <label for="edit-bio">Bio</label>
+          <textarea id="edit-bio" rows="4" maxlength="500"></textarea>
+          <div class="field-hint" id="edit-bio-count">0 / 500</div>
+        </div>
+        <div class="field">
+          <label for="edit-occupation">Occupation</label>
+          <input type="text" id="edit-occupation"/>
+        </div>
+        <div class="field">
+          <label for="edit-education">Education</label>
+          <input type="text" id="edit-education"/>
+        </div>
+        <div class="field">
+          <label for="edit-city">Location</label>
+          <input type="text" id="edit-city"/>
+        </div>
+      </div>
+
+      <div class="edit-section">
+        <div class="e-title">Life stage</div>
+        <div class="field">
+          <label>Relationship goal</label>
+          <div class="chip-group" data-chips="edit-relationship_goal" data-mode="single">
+            <div class="chip" data-value="serious">Serious</div>
+            <div class="chip" data-value="companionship">Companionship</div>
+            <div class="chip" data-value="unsure">Still figuring it out</div>
+          </div>
+        </div>
+        <div class="field">
+          <label>Marital history</label>
+          <div class="chip-group" data-chips="edit-marital_history" data-mode="single">
+            <div class="chip" data-value="divorced">Divorced</div>
+            <div class="chip" data-value="widowed">Widowed</div>
+            <div class="chip" data-value="separated">Separated</div>
+            <div class="chip" data-value="never-married">Never married</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="edit-section">
+        <div class="e-title">Lifestyle</div>
+        <div class="field">
+          <label>Drinking</label>
+          <div class="chip-group" data-chips="edit-drinking" data-mode="single">
+            <div class="chip" data-value="never">Never</div>
+            <div class="chip" data-value="socially">Socially</div>
+            <div class="chip" data-value="regularly">Regularly</div>
+          </div>
+        </div>
+        <div class="field">
+          <label>Smoking</label>
+          <div class="chip-group" data-chips="edit-smoking" data-mode="single">
+            <div class="chip" data-value="never">Never</div>
+            <div class="chip" data-value="occasionally">Occasionally</div>
+            <div class="chip" data-value="regularly">Regularly</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="edit-section">
+        <div class="e-title">Interests</div>
+        <div class="chip-group" data-chips="edit-interests" data-mode="multi" data-max="6">
+          <div class="chip" data-value="travel">Travel</div>
+          <div class="chip" data-value="cooking">Cooking</div>
+          <div class="chip" data-value="hiking">Hiking</div>
+          <div class="chip" data-value="reading">Reading</div>
+          <div class="chip" data-value="music">Live music</div>
+          <div class="chip" data-value="art">Art &amp; museums</div>
+          <div class="chip" data-value="wine">Wine tasting</div>
+          <div class="chip" data-value="gardening">Gardening</div>
+          <div class="chip" data-value="golf">Golf</div>
+          <div class="chip" data-value="dancing">Dancing</div>
+          <div class="chip" data-value="volunteering">Volunteering</div>
+          <div class="chip" data-value="grandkids">Time with grandkids</div>
+        </div>
+        <div class="interest-counter"><span id="edit-interest-count">0</span> / 6 selected</div>
+      </div>
+
+      <button class="btn btn-rose" id="btn-save-profile">Save changes</button>
+      <div style="height:20px"></div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════
+       SUBSCRIPTION
+       ════════════════════════════════════════════════ -->
+  <div class="screen" id="screen-subscription">
+    <div class="back-row">
+      <button class="back-btn" data-nav="profile"><svg width="18" height="18"><use href="#i-back"/></svg></button>
+      <div class="display">Membership</div>
+    </div>
+    <div class="scroll" style="padding:6px 22px 24px">
+      <p class="body-text" style="margin-bottom:18px">Choose the plan that fits how you'd like to explore Mellow.</p>
+      <div id="plans-list"></div>
+      <p class="tiny" style="text-align:center;margin-top:8px;line-height:1.6">
+        Cancel anytime from this screen. Payments are processed securely by Stripe.
+      </p>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════════════════
+       SHEETS / OVERLAYS
+       ════════════════════════════════════════════════ -->
+
+  <!-- Filters sheet -->
+  <div class="sheet-overlay" id="sheet-filters">
+    <div class="sheet">
+      <div class="sheet-handle"></div>
+      <div class="display" style="font-size:20px;margin-bottom:18px">Discovery preferences</div>
+      <div class="scroll" style="max-height:50vh">
+        <div class="filter-section">
+          <div class="f-title">Age range</div>
+          <div class="filter-row"><span class="f-label">Minimum age</span><span class="f-val" id="filter-age-min-val">35</span></div>
+          <input type="range" id="filter-age-min" min="30" max="80" value="35"/>
+          <div class="filter-row" style="margin-top:14px"><span class="f-label">Maximum age</span><span class="f-val" id="filter-age-max-val">65</span></div>
+          <input type="range" id="filter-age-max" min="30" max="80" value="65"/>
+        </div>
+        <div class="filter-section">
+          <div class="f-title">Distance</div>
+          <div class="filter-row"><span class="f-label">Maximum distance</span><span class="f-val" id="filter-distance-val">50 km</span></div>
+          <input type="range" id="filter-distance" min="5" max="200" value="50" step="5"/>
+        </div>
+      </div>
+      <button class="btn btn-rose" id="filter-apply">Apply preferences</button>
+    </div>
+  </div>
+
+  <!-- Report / Block sheet -->
+  <div class="sheet-overlay" id="sheet-report">
+    <div class="sheet">
+      <div class="sheet-handle"></div>
+      <div class="display" style="font-size:20px;margin-bottom:6px">Report or block</div>
+      <p class="body-text" style="margin-bottom:14px">Your report is confidential. Blocking also removes this match.</p>
+      <div id="report-reasons">
+        <div class="reason-option" data-reason="inappropriate_photos"><span class="r-label">Inappropriate photos</span><span class="r-radio"></span></div>
+        <div class="reason-option" data-reason="harassment"><span class="r-label">Harassment or abuse</span><span class="r-radio"></span></div>
+        <div class="reason-option" data-reason="fake_profile"><span class="r-label">Fake profile</span><span class="r-radio"></span></div>
+        <div class="reason-option" data-reason="scam"><span class="r-label">Scam or solicitation</span><span class="r-radio"></span></div>
+        <div class="reason-option" data-reason="other"><span class="r-label">Something else</span><span class="r-radio"></span></div>
+      </div>
+      <div style="display:flex;gap:10px;margin-top:18px">
+        <button class="btn btn-outline" id="btn-block-only">Block only</button>
+        <button class="btn btn-rose" id="btn-submit-report">Report &amp; block</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading overlay -->
+  <div class="loading-overlay" id="loading-overlay"><div class="spinner"></div></div>
+
+  <!-- Toast -->
+  <div class="toast" id="toast"></div>
+
+</div>
+
+<script>window.KINDRED_API_BASE = 'http://localhost:8000';
+  window.KINDRED_WS_BASE  = 'ws://localhost:8000';
+</script>
+
+<script src="js/api.js"></script>
+<script src="js/app.js"></script>
+<script src="js/discover.js"></script>
+<script src="js/messages.js"></script>
+<script src="js/profile.js"></script>
+</body>
+</html>

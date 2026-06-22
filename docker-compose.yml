@@ -1,0 +1,70 @@
+version: "3.8"
+
+# ══════════════════════════════════════════
+# Kindred — Local Development Stack
+# Usage: docker-compose up
+# ══════════════════════════════════════════
+
+services:
+
+  # ── PostgreSQL Database ───────────────
+  db:
+    image: postgres:15-alpine
+    container_name: kindred_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER:     kindred
+      POSTGRES_PASSWORD: kindred
+      POSTGRES_DB:       kindred
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U kindred"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # ── Redis Cache ───────────────────────
+  redis:
+    image: redis:7-alpine
+    container_name: kindred_redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # ── FastAPI Backend ───────────────────
+  api:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: kindred_api
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: postgresql+asyncpg://kindred:kindred@db:5432/kindred
+      REDIS_URL:    redis://redis:6379/0
+      DEBUG:        "True"
+    env_file:
+      - ./backend/.env
+    volumes:
+      - ./backend:/app
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: uvicorn main:app --host 0.0.0.0 --port 8000 --reload
+
+volumes:
+  postgres_data:
+  redis_data:

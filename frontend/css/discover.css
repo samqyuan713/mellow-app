@@ -1,0 +1,169 @@
+/* ════════════════════════════════════════════════════════════
+   KINDRED — Discover Screen
+   Signature element: the "Mellow Bloom" compatibility indicator
+   ════════════════════════════════════════════════════════════ */
+
+.discover-head {
+  display: flex; justify-content: space-between; align-items: center;
+  padding: 14px 22px 10px; flex-shrink: 0;
+}
+.discover-head .display { font-size: 24px; }
+.discover-head-icons { display: flex; gap: 10px; }
+.discover-head-icons button {
+  width: 40px; height: 40px; border-radius: 50%;
+  border: none; background: var(--white);
+  box-shadow: var(--shadow-sm);
+  font-size: 18px; color: var(--plum);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; touch-action: manipulation;
+}
+
+.card-stack { flex: 1; position: relative; padding: 4px 18px; overflow: hidden; }
+.discover-card {
+  position: absolute; inset: 4px 18px;
+  border-radius: var(--r-xl);
+  overflow: hidden;
+  background: var(--white);
+  box-shadow: var(--shadow-lg);
+  cursor: grab;
+  transition: transform .15s ease, opacity .15s ease;
+}
+.discover-card.back { transform: scale(.95) translateY(14px); z-index: 1; }
+.discover-card.front { z-index: 2; }
+.discover-card.swiping { transition: none; }
+.discover-card.fly-right { transform: translateX(160%) rotate(18deg) !important; opacity: 0; transition: transform .4s ease, opacity .4s ease; }
+.discover-card.fly-left  { transform: translateX(-160%) rotate(-18deg) !important; opacity: 0; transition: transform .4s ease, opacity .4s ease; }
+
+.card-photo {
+  position: relative; width: 100%; height: 62%;
+  background: var(--cream-deep);
+  overflow: hidden;
+}
+.card-photo img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.card-photo .no-photo {
+  width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;
+  font-family: 'Fraunces', serif; font-size: 64px; color: var(--rose-light);
+  background: var(--plum);
+}
+.card-gallery-dots {
+  position: absolute; top: 14px; left: 16px; right: 16px;
+  display: flex; gap: 5px;
+}
+.card-gallery-dots .dot {
+  flex: 1; height: 3px; border-radius: 2px;
+  background: rgba(255,255,255,.35);
+}
+.card-gallery-dots .dot.active { background: #fff; }
+
+.card-like-stamp, .card-pass-stamp {
+  position: absolute; top: 28px;
+  padding: 6px 18px; border-radius: 10px;
+  font-family: 'Fraunces', serif; font-style: italic;
+  font-size: 24px; font-weight: 600; letter-spacing: .04em;
+  border: 3px solid; opacity: 0; transition: opacity .1s;
+  z-index: 5; text-transform: uppercase;
+}
+.card-like-stamp { left: 24px; color: var(--sage); border-color: var(--sage); transform: rotate(-12deg); }
+.card-pass-stamp { right: 24px; color: var(--ink-faint); border-color: var(--ink-faint); transform: rotate(12deg); }
+
+.card-body { padding: 16px 20px 18px; height: 38%; display: flex; flex-direction: column; }
+.card-name-row { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+.card-name { font-family: 'Fraunces', serif; font-size: 24px; color: var(--plum); }
+.card-name .age { color: var(--ink-faint); font-weight: 400; }
+.card-meta {
+  font-size: 12.5px; color: var(--ink-soft); margin-top: 3px;
+  display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
+}
+.card-meta .dot-sep { color: var(--ink-faint); }
+.card-bio {
+  font-size: 13px; color: var(--ink-soft); line-height: 1.55;
+  margin-top: 10px;
+  display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.card-tags { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 10px; }
+.card-tags .tag {
+  font-size: 11px; font-weight: 500; padding: 4px 10px;
+  border-radius: var(--r-pill); background: var(--cream-deep); color: var(--ink-soft);
+}
+
+/* ── Mellow Bloom (compatibility indicator) ───────────── */
+.bloom {
+  position: absolute; top: 16px; right: 16px;
+  width: 58px; height: 58px; z-index: 4;
+  filter: drop-shadow(0 2px 6px rgba(44,31,46,.18));
+}
+.bloom svg { width: 100%; height: 100%; }
+.bloom-petal { transform-origin: 50px 50px; transition: opacity .4s, fill .4s; }
+.bloom-center {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  flex-direction: column;
+}
+.bloom-score {
+  font-family: 'Fraunces', serif; font-weight: 600; font-size: 15px; color: var(--plum);
+  line-height: 1;
+}
+.bloom-label {
+  font-size: 6px; font-weight: 700; letter-spacing: .08em;
+  color: var(--ink-faint); text-transform: uppercase; margin-top: 1px;
+}
+
+/* ── Action Buttons ─────────────────────────────────────── */
+.discover-actions {
+  display: flex; justify-content: center; align-items: center; gap: 16px;
+  padding: 16px 0 14px; flex-shrink: 0;
+}
+
+/* ── Empty State ────────────────────────────────────────── */
+.empty-state {
+  flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  text-align: center; padding: 40px;
+}
+.empty-state .emoji { font-size: 48px; margin-bottom: 16px; }
+.empty-state .display { font-size: 22px; margin-bottom: 8px; }
+.empty-state .body-text { max-width: 260px; }
+.empty-state .btn-rose { margin-top: 24px; max-width: 220px; }
+
+/* ── Match Celebration Overlay ──────────────────────────── */
+.match-overlay {
+  position: absolute; inset: 0; z-index: 150;
+  background: linear-gradient(165deg, rgba(61,38,69,.96), rgba(178,92,75,.92));
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 18px; padding: 32px;
+  opacity: 0; pointer-events: none; transition: opacity .35s;
+}
+.match-overlay.show { opacity: 1; pointer-events: all; }
+.match-overlay .eyebrow { color: var(--gold); }
+.match-overlay .display {
+  font-size: 38px; color: var(--cream); font-style: italic; text-align: center;
+}
+.match-overlay .body-text { color: rgba(251,246,239,.75); text-align: center; }
+.match-avatars { display: flex; align-items: center; gap: -10px; margin: 8px 0; }
+.match-avatars .av {
+  width: 86px; height: 86px; border-radius: 50%;
+  border: 3px solid var(--cream); overflow: hidden; background: var(--cream-deep);
+  margin: 0 -10px;
+}
+.match-avatars .av img { width: 100%; height: 100%; object-fit: cover; }
+.match-overlay .btn-rose, .match-overlay .btn-outline { max-width: 280px; }
+
+/* ── Filters Sheet ──────────────────────────────────────── */
+.filter-section { margin-bottom: 22px; }
+.filter-section .f-title {
+  font-size: 12px; font-weight: 600; color: var(--plum);
+  text-transform: uppercase; letter-spacing: .08em; margin-bottom: 12px;
+}
+.filter-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+.filter-row .f-label { font-size: 14px; color: var(--ink); }
+.filter-row .f-val { font-size: 13px; color: var(--rose); font-weight: 600; }
+input[type="range"] {
+  width: 100%; -webkit-appearance: none; appearance: none;
+  height: 4px; background: var(--line-strong); border-radius: 2px; outline: none;
+  margin-top: 8px;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none; width: 22px; height: 22px; border-radius: 50%;
+  background: var(--rose); cursor: pointer; border: 3px solid var(--white);
+  box-shadow: var(--shadow-sm);
+}
