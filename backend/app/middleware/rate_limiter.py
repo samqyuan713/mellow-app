@@ -48,6 +48,9 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
         return RATE_RULES["default"]
 
     async def dispatch(self, request: Request, call_next) -> Response:
+        """No-op rate limiter — re-enable once Redis async is fixed."""
+        return await call_next(request)
+        
         # Skip rate limiting for health check
         if request.url.path in ("/health", "/"):
             return await call_next(request)
