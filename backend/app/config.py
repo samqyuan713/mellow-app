@@ -19,7 +19,8 @@ class Settings(BaseSettings):
 
     # ── Database ───────────────────────────────────────────────
     DATABASE_URL: str = "postgresql+asyncpg://mellow:mellow@localhost:5432/mellow"
-    REDIS_URL: str = "redis://localhost:6379/0"
+    REDIS_URL: str = ""
+    # "redis://localhost:6379/0"
 
     # ── JWT Auth ───────────────────────────────────────────────
     JWT_SECRET: str = secrets.token_hex(32)

@@ -13,7 +13,7 @@ import logging
 from app.config import settings
 from app.database import create_tables
 from app.routers import auth, profiles, matches, messages, subscriptions, safety
-from app.middleware.rate_limiter import RateLimitMiddleware
+# from app.middleware.rate_limiter import RateLimitMiddleware
 
 # ── Logging ────────────────────────────────────────────────────
 logging.basicConfig(
@@ -53,7 +53,7 @@ app.add_middleware(
     allow_headers=["Authorization", "Content-Type"],
 )
 
-app.add_middleware(RateLimitMiddleware)
+# app.add_middleware(RateLimitMiddleware)
 
 if not settings.DEBUG:
     app.add_middleware(
