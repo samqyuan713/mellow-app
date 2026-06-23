@@ -2,7 +2,7 @@
 Mellow — General Helpers & Utilities
 """
 
-from datetime import datetime, timezone
+from datetime import datetime
 from typing import Optional, Any
 from uuid import UUID
 import math
@@ -12,12 +12,12 @@ import re
 # ── Date / Time ────────────────────────────────────────────────
 def utcnow() -> datetime:
     """Return timezone-aware UTC datetime."""
-    return datetime.now(timezone.utc)
+    return datetime.utcnow()
 
 
 def time_ago(dt: datetime) -> str:
     """Return human-readable 'time ago' string."""
-    now   = datetime.now(timezone.utc)
+    now   = datetime.utcnow()
     if dt.tzinfo is None:
         dt = dt.replace(tzinfo=timezone.utc)
     diff  = now - dt

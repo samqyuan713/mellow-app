@@ -3,7 +3,7 @@ Mellow — Security Utilities
 Password hashing with bcrypt and JWT token management.
 """
 
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 from typing import Optional
 from uuid import UUID
 import secrets
@@ -41,7 +41,7 @@ def create_access_token(
     expires_delta: Optional[timedelta] = None
 ) -> str:
     """Create a short-lived JWT access token."""
-    expire = datetime.now(timezone.utc) + (
+    expire = datetime.utcnow() + (
         expires_delta or
         timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES)
     )
@@ -51,19 +51,19 @@ def create_access_token(
         "role":  role,
         "type":  "access",
         "exp":   expire,
-        "iat":   datetime.now(timezone.utc),
+        "iat":   datetime.utcnow(),
     }
     return jwt.encode(payload, settings.JWT_SECRET, algorithm=settings.JWT_ALGORITHM)
 
 
 def create_refresh_token(user_id: UUID) -> str:
     """Create a long-lived JWT refresh token."""
-    expire = datetime.now(timezone.utc) + timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS)
+    expire = datetime.utcnow() + timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS)
     payload = {
         "sub":  str(user_id),
         "type": "refresh",
         "exp":  expire,
-        "iat":  datetime.now(timezone.utc),
+        "iat":  datetime.utcnow(),
     }
     return jwt.encode(payload, settings.JWT_SECRET, algorithm=settings.JWT_ALGORITHM)
 

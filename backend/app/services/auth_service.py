@@ -3,7 +3,7 @@ Mellow — Auth Service
 Core authentication business logic.
 """
 
-from datetime import datetime, timezone
+from datetime import datetime
 from typing import Optional
 from uuid import UUID
 
@@ -131,7 +131,7 @@ class AuthService:
         await db.execute(
             update(User)
             .where(User.id == user.id)
-            .values(last_login=datetime.now(timezone.utc))
+            .values(last_login=datetime.utcnow())
         )
         await db.commit()
         await db.refresh(user)
@@ -192,7 +192,7 @@ class AuthService:
         # Always return success (don't reveal if email exists)
         if user and user.is_active:
             reset_token = generate_secure_token(32)
-            expiry = datetime.now(timezone.utc).replace(
+            expiry = datetime.utcnow().replace(
                 tzinfo=None
             ).replace(hour=datetime.now().hour + 1)
 
