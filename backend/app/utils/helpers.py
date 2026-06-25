@@ -1,5 +1,6 @@
 """
 Mellow — General Helpers & Utilities
+Fixed: datetime.utcnow() used throughout.
 """
 
 from datetime import datetime
@@ -11,28 +12,29 @@ import re
 
 # ── Date / Time ────────────────────────────────────────────────
 def utcnow() -> datetime:
-    """Return timezone-aware UTC datetime."""
+    """Return UTC datetime (naive, consistent with PostgreSQL)."""
     return datetime.utcnow()
 
 
 def time_ago(dt: datetime) -> str:
     """Return human-readable 'time ago' string."""
-    now   = datetime.utcnow()
-    if dt.tzinfo is None:
-        dt = dt.replace(tzinfo=timezone.utc)
-    diff  = now - dt
-    secs  = int(diff.total_seconds())
+    now  = datetime.utcnow()
+    diff = now - dt.replace(tzinfo=None) if dt.tzinfo else now - dt
+    secs = int(diff.total_seconds())
 
-    if secs < 60:       return "just now"
-    if secs < 3600:     return f"{secs // 60}m ago"
-    if secs < 86400:    return f"{secs // 3600}h ago"
-    if secs < 604800:   return f"{secs // 86400}d ago"
+    if secs < 60:    return "just now"
+    if secs < 3600:  return f"{secs // 60}m ago"
+    if secs < 86400: return f"{secs // 3600}h ago"
+    if secs < 604800:return f"{secs // 86400}d ago"
     return dt.strftime("%d %b %Y")
 
 
 # ── Distance ───────────────────────────────────────────────────
-def haversine_km(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
-    """Calculate great-circle distance in km between two lat/lon points."""
+def haversine_km(
+    lat1: float, lon1: float,
+    lat2: float, lon2: float
+) -> float:
+    """Calculate great-circle distance in km."""
     R = 6371.0
     dlat = math.radians(lat2 - lat1)
     dlon = math.radians(lon2 - lon1)
@@ -46,32 +48,28 @@ def haversine_km(lat1: float, lon1: float, lat2: float, lon2: float) -> float:
 
 
 def format_distance(km: float) -> str:
-    """Human-readable distance string."""
-    if km < 1:
-        return f"{int(km * 1000)} m away"
-    if km < 10:
-        return f"{km:.1f} km away"
+    if km < 1:   return f"{int(km * 1000)} m away"
+    if km < 10:  return f"{km:.1f} km away"
     return f"{int(km)} km away"
 
 
 # ── String Helpers ─────────────────────────────────────────────
 def slugify(text: str) -> str:
-    """Convert text to URL-friendly slug."""
     text = text.lower().strip()
     text = re.sub(r"[^\w\s-]", "", text)
     text = re.sub(r"[\s_-]+", "-", text)
     return re.sub(r"^-+|-+$", "", text)
 
 
-def truncate(text: str, max_len: int = 100, suffix: str = "...") -> str:
-    """Truncate a string to max_len characters."""
+def truncate(
+    text: str, max_len: int = 100, suffix: str = "..."
+) -> str:
     if not text or len(text) <= max_len:
         return text
     return text[: max_len - len(suffix)] + suffix
 
 
 def mask_email(email: str) -> str:
-    """Mask an email for safe display: j***@example.com"""
     parts = email.split("@")
     if len(parts) != 2:
         return "***@***.***"
@@ -82,7 +80,6 @@ def mask_email(email: str) -> str:
 
 # ── UUID Helpers ───────────────────────────────────────────────
 def safe_uuid(value: Any) -> Optional[UUID]:
-    """Safely convert a value to UUID, returning None on failure."""
     try:
         return UUID(str(value))
     except (ValueError, AttributeError):
@@ -91,7 +88,6 @@ def safe_uuid(value: Any) -> Optional[UUID]:
 
 # ── Pagination ─────────────────────────────────────────────────
 def paginate(total: int, page: int, limit: int) -> dict:
-    """Generate pagination metadata."""
     total_pages = math.ceil(total / limit) if limit > 0 else 0
     return {
         "total":       total,

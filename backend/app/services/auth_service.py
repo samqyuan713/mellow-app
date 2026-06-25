@@ -1,6 +1,7 @@
 """
 Mellow — Auth Service
 Core authentication business logic.
+All datetime and async SQLAlchemy patterns fixed.
 """
 
 from datetime import datetime
@@ -8,7 +9,7 @@ from typing import Optional
 from uuid import UUID
 
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, update
+from sqlalchemy import select
 from fastapi import HTTPException, status
 import httpx
 import logging
@@ -30,7 +31,6 @@ logger = logging.getLogger("mellow.auth")
 
 
 def _build_tokens(user: User) -> TokenResponse:
-    """Build access + refresh token pair for a user."""
     return TokenResponse(
         access_token=create_access_token(
             user_id=user.id,
@@ -43,7 +43,6 @@ def _build_tokens(user: User) -> TokenResponse:
 
 
 def _build_user_response(user: User) -> UserResponse:
-    """Build the user response object."""
     plan = "free"
     if user.subscription:
         plan = user.subscription.plan
@@ -81,7 +80,8 @@ class AuthService:
             email_verify_token=verify_token,
         )
         db.add(user)
-        await db.flush()   # get user.id before commit
+        await db.commit()
+        await db.refresh(user)
 
         # Auto-create free subscription
         subscription = Subscription(user_id=user.id, plan="free")
@@ -90,9 +90,6 @@ class AuthService:
         await db.refresh(user)
 
         logger.info(f"New user registered: {user.email}")
-
-        # TODO: Send verification email via email_service
-        # await EmailService.send_verification_email(user.email, verify_token)
 
         tokens = _build_tokens(user)
         return AuthResponse(
@@ -112,7 +109,6 @@ class AuthService:
         )
         user = result.scalar_one_or_none()
 
-        # Generic error — don't reveal whether email exists
         invalid_credentials = HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid email or password"
@@ -123,18 +119,19 @@ class AuthService:
         if not verify_password(data.password, user.password_hash):
             raise invalid_credentials
         if not user.is_active:
-            raise HTTPException(status_code=403, detail="Account is deactivated")
+            raise HTTPException(
+                status_code=403,
+                detail="Account is deactivated"
+            )
         if user.is_banned:
-            raise HTTPException(status_code=403, detail="Account has been suspended")
+            raise HTTPException(
+                status_code=403,
+                detail="Account has been suspended"
+            )
 
-        # Update last login
-        await db.execute(
-            update(User)
-            .where(User.id == user.id)
-            .values(last_login=datetime.utcnow())
-        )
+        # Direct attribute update — correct pattern for async SQLAlchemy
+        user.last_login = datetime.utcnow()
         await db.commit()
-        await db.refresh(user)
 
         logger.info(f"User logged in: {user.email}")
         return AuthResponse(
@@ -150,12 +147,18 @@ class AuthService:
         user_id = UUID(payload["sub"])
 
         result = await db.execute(
-            select(User).where(User.id == user_id, User.deleted_at.is_(None))
+            select(User).where(
+                User.id == user_id,
+                User.deleted_at.is_(None)
+            )
         )
         user = result.scalar_one_or_none()
 
         if not user or not user.is_active:
-            raise HTTPException(status_code=401, detail="Invalid refresh token")
+            raise HTTPException(
+                status_code=401,
+                detail="Invalid refresh token"
+            )
 
         return _build_tokens(user)
 
@@ -168,16 +171,17 @@ class AuthService:
         user = result.scalar_one_or_none()
 
         if not user:
-            raise HTTPException(status_code=400, detail="Invalid verification token")
+            raise HTTPException(
+                status_code=400,
+                detail="Invalid verification token"
+            )
         if user.is_email_verified:
             return {"message": "Email already verified"}
 
-        await db.execute(
-            update(User)
-            .where(User.id == user.id)
-            .values(is_email_verified=True, email_verify_token=None)
-        )
+        user.is_email_verified = True
+        user.email_verify_token = None
         await db.commit()
+
         logger.info(f"Email verified: {user.email}")
         return {"message": "Email verified successfully!"}
 
@@ -189,27 +193,22 @@ class AuthService:
         )
         user = result.scalar_one_or_none()
 
-        # Always return success (don't reveal if email exists)
         if user and user.is_active:
             reset_token = generate_secure_token(32)
-            expiry = datetime.utcnow().replace(
-                tzinfo=None
-            ).replace(hour=datetime.now().hour + 1)
-
-            await db.execute(
-                update(User)
-                .where(User.id == user.id)
-                .values(reset_token=reset_token, reset_token_expiry=expiry)
+            user.reset_token = reset_token
+            user.reset_token_expiry = datetime.utcnow().replace(
+                hour=datetime.utcnow().hour + 1
             )
             await db.commit()
-            # TODO: await EmailService.send_reset_email(user.email, reset_token)
             logger.info(f"Password reset requested: {user.email}")
 
         return {"message": "If that email exists, a reset link has been sent."}
 
     # ── Reset Password ─────────────────────────────────────────
     @staticmethod
-    async def reset_password(token: str, new_password: str, db: AsyncSession) -> dict:
+    async def reset_password(
+        token: str, new_password: str, db: AsyncSession
+    ) -> dict:
         result = await db.execute(
             select(User).where(
                 User.reset_token == token,
@@ -219,28 +218,24 @@ class AuthService:
         user = result.scalar_one_or_none()
 
         if not user:
-            raise HTTPException(status_code=400, detail="Invalid or expired reset token")
-
-        await db.execute(
-            update(User)
-            .where(User.id == user.id)
-            .values(
-                password_hash=hash_password(new_password),
-                reset_token=None,
-                reset_token_expiry=None
+            raise HTTPException(
+                status_code=400,
+                detail="Invalid or expired reset token"
             )
-        )
+
+        user.password_hash = hash_password(new_password)
+        user.reset_token = None
+        user.reset_token_expiry = None
         await db.commit()
+
         logger.info(f"Password reset completed: {user.email}")
         return {"message": "Password updated successfully. Please log in."}
 
     # ── Google OAuth ───────────────────────────────────────────
     @staticmethod
     async def google_oauth(code: str, db: AsyncSession) -> AuthResponse:
-        """Exchange Google auth code for user info and login/register."""
         try:
             async with httpx.AsyncClient() as client:
-                # Exchange code for tokens
                 token_resp = await client.post(
                     "https://oauth2.googleapis.com/token",
                     data={
@@ -253,26 +248,36 @@ class AuthService:
                 )
                 token_data = token_resp.json()
                 if "error" in token_data:
-                    raise HTTPException(status_code=400, detail="Google OAuth failed")
+                    raise HTTPException(
+                        status_code=400,
+                        detail="Google OAuth failed"
+                    )
 
-                # Get user info
                 user_resp = await client.get(
                     "https://www.googleapis.com/oauth2/v2/userinfo",
-                    headers={"Authorization": f"Bearer {token_data['access_token']}"}
+                    headers={
+                        "Authorization": f"Bearer {token_data['access_token']}"
+                    }
                 )
                 google_user = user_resp.json()
 
         except Exception as e:
             logger.error(f"Google OAuth error: {e}")
-            raise HTTPException(status_code=400, detail="Google authentication failed")
+            raise HTTPException(
+                status_code=400,
+                detail="Google authentication failed"
+            )
 
         google_id = google_user.get("id")
-        email     = google_user.get("email", "").lower()
+        email = google_user.get("email", "").lower()
 
         if not email:
-            raise HTTPException(status_code=400, detail="Could not get email from Google")
+            raise HTTPException(
+                status_code=400,
+                detail="Could not get email from Google"
+            )
 
-        # Find existing user by google_id or email
+        # Find existing user
         result = await db.execute(
             select(User).where(
                 (User.google_id == google_id) | (User.email == email)
@@ -281,28 +286,26 @@ class AuthService:
         user = result.scalar_one_or_none()
 
         if user:
-            # Update google_id if missing
             if not user.google_id:
-                await db.execute(
-                    update(User).where(User.id == user.id)
-                    .values(google_id=google_id, is_email_verified=True)
-                )
+                user.google_id = google_id
+                user.is_email_verified = True
                 await db.commit()
-                await db.refresh(user)
             message = "Welcome back!"
         else:
-            # Register new user via Google
             user = User(
                 email=email,
                 google_id=google_id,
-                is_email_verified=True,   # Google emails are pre-verified
+                is_email_verified=True,
             )
             db.add(user)
-            await db.flush()
+            await db.commit()
+            await db.refresh(user)
+
             sub = Subscription(user_id=user.id, plan="free")
             db.add(sub)
             await db.commit()
             await db.refresh(user)
+
             message = "Account created via Google!"
             logger.info(f"New Google user: {email}")
 

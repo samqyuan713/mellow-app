@@ -1,5 +1,6 @@
 # ══════════════════════════════════════════
-# Kindred — Python Dependencies
+# Mellow — Python Dependencies
+# Fixed: bcrypt pinned to 4.0.1 for passlib compatibility
 # ══════════════════════════════════════════
 
 # Core Framework
@@ -16,7 +17,7 @@ psycopg2-binary==2.9.9
 # Cache / Redis
 redis==5.0.1
 
-# Auth & Security
+# Auth & Security — bcrypt MUST be 4.0.1 for passlib compatibility
 python-jose[cryptography]==3.3.0
 passlib[bcrypt]==1.7.4
 bcrypt==4.0.1
@@ -40,9 +41,6 @@ sendgrid==6.11.0
 
 # SMS (optional)
 twilio==8.12.0
-
-# Rate Limiting
-slowapi==0.1.9
 
 # Utilities
 pytz==2024.1

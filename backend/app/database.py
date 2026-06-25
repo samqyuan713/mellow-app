@@ -1,6 +1,6 @@
 """
 Mellow — Database Configuration
-Async SQLAlchemy with PostgreSQL via asyncpg.
+Fixed: auto-corrects DATABASE_URL format for Railway compatibility.
 """
 
 from sqlalchemy.ext.asyncio import (
@@ -16,14 +16,29 @@ from app.config import settings
 
 logger = logging.getLogger("mellow.database")
 
+
+# ── Auto-correct DATABASE_URL format ───────────────────────────
+def _fix_db_url(url: str) -> str:
+    """
+    Railway injects postgresql:// or postgres:// but asyncpg needs
+    postgresql+asyncpg:// — fix automatically regardless of source.
+    """
+    url = url.replace("postgres://", "postgresql://")
+    if "postgresql+asyncpg://" not in url:
+        url = url.replace("postgresql://", "postgresql+asyncpg://")
+    return url
+
+
+_DATABASE_URL = _fix_db_url(settings.DATABASE_URL)
+
 # ── Engine ─────────────────────────────────────────────────────
 engine = create_async_engine(
-    settings.DATABASE_URL,
+    _DATABASE_URL,
     echo=settings.DEBUG,
-    pool_size=10,
-    max_overflow=20,
-    pool_pre_ping=True,           # verify connections before use
-    pool_recycle=3600,            # recycle connections every hour
+    pool_size=5,
+    max_overflow=10,
+    pool_pre_ping=True,
+    pool_recycle=3600,
 )
 
 # ── Session Factory ────────────────────────────────────────────
@@ -44,7 +59,6 @@ class Base(DeclarativeBase):
 # ── Create All Tables ──────────────────────────────────────────
 async def create_tables():
     """Create all tables on startup if they don't exist."""
-    # Import all models so SQLAlchemy knows about them
     from app.models import user, profile, match, message, subscription  # noqa
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)

@@ -1,6 +1,7 @@
 """
 Mellow — Security Utilities
 Password hashing with bcrypt and JWT token management.
+Fixed: datetime.utcnow() used throughout, bcrypt compatibility.
 """
 
 from datetime import datetime, timedelta
@@ -19,7 +20,8 @@ from app.config import settings
 pwd_context = CryptContext(
     schemes=["bcrypt"],
     deprecated="auto",
-    bcrypt__rounds=12     # cost factor — higher = slower = safer
+    bcrypt__rounds=12,
+    bcrypt__ident="2b"
 )
 
 
@@ -30,7 +32,10 @@ def hash_password(plain_password: str) -> str:
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:
     """Verify a plain password against a hashed one."""
-    return pwd_context.verify(plain_password, hashed_password)
+    try:
+        return pwd_context.verify(plain_password, hashed_password)
+    except Exception:
+        return False
 
 
 # ── JWT Tokens ─────────────────────────────────────────────────
@@ -53,19 +58,29 @@ def create_access_token(
         "exp":   expire,
         "iat":   datetime.utcnow(),
     }
-    return jwt.encode(payload, settings.JWT_SECRET, algorithm=settings.JWT_ALGORITHM)
+    return jwt.encode(
+        payload,
+        settings.JWT_SECRET,
+        algorithm=settings.JWT_ALGORITHM
+    )
 
 
 def create_refresh_token(user_id: UUID) -> str:
     """Create a long-lived JWT refresh token."""
-    expire = datetime.utcnow() + timedelta(days=settings.REFRESH_TOKEN_EXPIRE_DAYS)
+    expire = datetime.utcnow() + timedelta(
+        days=settings.REFRESH_TOKEN_EXPIRE_DAYS
+    )
     payload = {
         "sub":  str(user_id),
         "type": "refresh",
         "exp":  expire,
         "iat":  datetime.utcnow(),
     }
-    return jwt.encode(payload, settings.JWT_SECRET, algorithm=settings.JWT_ALGORITHM)
+    return jwt.encode(
+        payload,
+        settings.JWT_SECRET,
+        algorithm=settings.JWT_ALGORITHM
+    )
 
 
 def decode_token(token: str, expected_type: str = "access") -> dict:

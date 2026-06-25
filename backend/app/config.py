@@ -1,11 +1,10 @@
 """
 Mellow — Application Configuration
-Loads all settings from environment variables with sensible defaults.
+Fixed: ALLOWED_ORIGINS as plain str to avoid pydantic parsing issues.
 """
 
 from pydantic_settings import BaseSettings
-from pydantic import field_validator
-from typing import List
+from typing import List, Optional
 import secrets
 
 
@@ -20,7 +19,6 @@ class Settings(BaseSettings):
     # ── Database ───────────────────────────────────────────────
     DATABASE_URL: str = "postgresql+asyncpg://mellow:mellow@localhost:5432/mellow"
     REDIS_URL: str = ""
-    # "redis://localhost:6379/0"
 
     # ── JWT Auth ───────────────────────────────────────────────
     JWT_SECRET: str = secrets.token_hex(32)
@@ -50,14 +48,24 @@ class Settings(BaseSettings):
     FROM_EMAIL: str = "hello@mellow.app"
     FROM_NAME: str = "Mellow"
 
-    # ── Twilio (optional SMS) ──────────────────────────────────
+    # ── Twilio ─────────────────────────────────────────────────
     TWILIO_ACCOUNT_SID: str = ""
     TWILIO_AUTH_TOKEN: str = ""
     TWILIO_PHONE_NUMBER: str = ""
 
     # ── CORS ───────────────────────────────────────────────────
+    # Plain string — no pydantic List parsing issues
     FRONTEND_URL: str = "http://localhost:5500"
-    ALLOWED_ORIGINS: str = "http://localhost:5500,http://localhost:8000,https://mellow.app"
+    ALLOWED_ORIGINS: str = "http://localhost:5500,http://127.0.0.1:5500,http://localhost:8000,https://mellow.app"
+
+    @property
+    def allowed_origins_list(self) -> List[str]:
+        """Split comma-separated origins into a list for FastAPI CORS."""
+        return [
+            o.strip()
+            for o in self.ALLOWED_ORIGINS.split(",")
+            if o.strip()
+        ]
 
     # ── Rate Limiting ──────────────────────────────────────────
     RATE_LIMIT_PER_MINUTE: int = 60
@@ -70,10 +78,6 @@ class Settings(BaseSettings):
     KINDRED_MAX_PHOTOS: int = 6
     KINDRED_PLUS_MAX_PHOTOS: int = 6
 
-    @property
-    def allowed_origins_list(self) -> List[str]:
-        return [o.strip() for o in self.ALLOWED_ORIGINS.split(",") if o.strip()]
-    
     @property
     def is_production(self) -> bool:
         return self.APP_ENV == "production"
