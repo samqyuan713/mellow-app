@@ -70,7 +70,10 @@ class AuthService:
                 selectinload(User.profile),
                 selectinload(User.subscription)
             )
-            .where(User.id == user.id)
+            .where(
+                User.email == data.email.lower(),
+                User.deleted_at.is_(None)
+            )
         )
         user = result.scalar_one()
         
@@ -90,6 +93,17 @@ class AuthService:
         db.add(user)
         await db.commit()
         await db.refresh(user)
+        
+        # Reload user with all relationships eagerly loaded
+        result = await db.execute(
+            select(User)
+            .options(
+                selectinload(User.profile),
+                selectinload(User.subscription)
+            )
+            .where(User.id == user.id)
+        )
+        user = result.scalar_one()
 
         # Auto-create free subscription
         subscription = Subscription(user_id=user.id, plan="free")
