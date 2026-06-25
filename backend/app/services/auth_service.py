@@ -10,6 +10,7 @@ from uuid import UUID
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+from sqlalchemy.orm import selectinload
 from fastapi import HTTPException, status
 import httpx
 import logging
@@ -64,8 +65,15 @@ class AuthService:
     async def register(data: RegisterRequest, db: AsyncSession) -> AuthResponse:
         # Check if email already exists
         result = await db.execute(
-            select(User).where(User.email == data.email.lower())
+            select(User)
+            .options(
+                selectinload(User.profile),
+                selectinload(User.subscription)
+            )
+            .where(User.id == user.id)
         )
+        user = result.scalar_one()
+        
         if result.scalar_one_or_none():
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
@@ -102,7 +110,12 @@ class AuthService:
     @staticmethod
     async def login(data: LoginRequest, db: AsyncSession) -> AuthResponse:
         result = await db.execute(
-            select(User).where(
+            select(User)
+            .options(
+                selectinload(User.profile),
+                selectinload(User.subscription)
+            )
+            .where(
                 User.email == data.email.lower(),
                 User.deleted_at.is_(None)
             )
@@ -147,7 +160,12 @@ class AuthService:
         user_id = UUID(payload["sub"])
 
         result = await db.execute(
-            select(User).where(
+            select(User)
+            .options(
+                selectinload(User.profile),
+                selectinload(User.subscription)
+            )
+            .where(
                 User.id == user_id,
                 User.deleted_at.is_(None)
             )
