@@ -129,16 +129,20 @@ function setChipSelection(key, values) {
 // ════════════════════════════════════════════════════════════
 // const OnboardData = { gender: null, seeking: null, marital_history: null, has_children: null, relationship_goal: null };
 
-//function initOptionCards(root = document) {
-//  root.querySelectorAll('.option-card').forEach(card => {
-//    card.addEventListener('click', () => {
-//      const group = card.dataset.group;
-//      root.querySelectorAll(`.option-card[data-group="${group}"]`).forEach(c => c.classList.remove('selected'));
-//      card.classList.add('selected');
-//      OnboardData[group] = card.dataset.value;
-//    });
-//  });
-//}
+function initOptionCards(root = document) {
+  root.querySelectorAll('.option-card').forEach(card => {
+    card.addEventListener('click', () => {
+      const group = card.dataset.group;
+      // Deselect all in same group
+      root.querySelectorAll(`.option-card[data-group="${group}"]`)
+        .forEach(c => c.classList.remove('selected'));
+      // Select clicked card
+      card.classList.add('selected');
+      // Store in ChipState instead of OnboardData
+      ChipState[group] = card.dataset.value;
+    });
+  });
+}
 
 // ════════════════════════════════════════════════════════════
 // AUTH — Login
@@ -436,7 +440,7 @@ async function routeAfterAuth() {
 
 (async function init() {
   initChipGroups();
-//  initOptionCards();
+  initOptionCards();
   showObStep(1);
 
   const handledRedirect = await handleGoogleRedirect();
