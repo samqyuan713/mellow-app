@@ -127,18 +127,18 @@ function setChipSelection(key, values) {
 // ════════════════════════════════════════════════════════════
 // OPTION CARDS (onboarding step 2)
 // ════════════════════════════════════════════════════════════
-const OnboardData = { gender: null, seeking: null, marital_history: null, has_children: null, relationship_goal: null };
+// const OnboardData = { gender: null, seeking: null, marital_history: null, has_children: null, relationship_goal: null };
 
-function initOptionCards(root = document) {
-  root.querySelectorAll('.option-card').forEach(card => {
-    card.addEventListener('click', () => {
-      const group = card.dataset.group;
-      root.querySelectorAll(`.option-card[data-group="${group}"]`).forEach(c => c.classList.remove('selected'));
-      card.classList.add('selected');
-      OnboardData[group] = card.dataset.value;
-    });
-  });
-}
+//function initOptionCards(root = document) {
+//  root.querySelectorAll('.option-card').forEach(card => {
+//    card.addEventListener('click', () => {
+//      const group = card.dataset.group;
+//      root.querySelectorAll(`.option-card[data-group="${group}"]`).forEach(c => c.classList.remove('selected'));
+//      card.classList.add('selected');
+//      OnboardData[group] = card.dataset.value;
+//    });
+//  });
+//}
 
 // ════════════════════════════════════════════════════════════
 // AUTH — Login
@@ -281,21 +281,21 @@ function showObStep(n) {
 }
 
 function validateObStep(n) {
-  if (n === 1) {
-    const age = parseInt(document.getElementById('ob-age').value);
-    const city = document.getElementById('ob-city').value.trim();
-    if (!age || age < 30 || age > 80) { showToast('Please enter an age between 30 and 80'); return false; }
-    if (!city) { showToast('Please tell us your city'); return false; }
-    if (!OnboardData.gender) { showToast('Please select your gender'); return false; }
-    if (!OnboardData.seeking) { showToast('Please select who you\'d like to meet'); return false; }
-    return true;
-  }
-  if (n === 2) {
-    if (!OnboardData.marital_history) { showToast('Please select your marital history'); return false; }
-    if (!ChipState.has_children) { showToast('Please let us know about children'); return false; }
-    if (!OnboardData.relationship_goal) { showToast('Please select what you\'re looking for'); return false; }
-    return true;
-  }
+    if (n === 1) {
+      const age = parseInt(document.getElementById('ob-age').value);
+      const city = document.getElementById('ob-city').value.trim();
+      if (!age || age < 30 || age > 80) { showToast('Please enter an age between 30 and 80'); return false; }
+      if (!city) { showToast('Please tell us your city'); return false; }
+      if (!ChipState['gender']) { showToast('Please select your gender'); return false; }
+      if (!ChipState['seeking']) { showToast('Please select who you\'d like to meet'); return false; }
+      return true;
+    }
+    if (n === 2) {
+      if (!ChipState['marital_history']) { showToast('Please select your marital history'); return false; }
+      if (!ChipState['has_children']) { showToast('Please let us know about children'); return false; }
+      if (!ChipState['relationship_goal']) { showToast('Please select what you\'re looking for'); return false; }
+      return true;
+    }
   if (n === 3) {
     const bio = document.getElementById('ob-bio').value.trim();
     if (bio.length < 20) { showToast('Tell us a little more — at least 20 characters'); return false; }
@@ -353,15 +353,15 @@ async function completeOnboarding() {
     const payload = {
       first_name: State.user.email.split('@')[0],
       age: parseInt(document.getElementById('ob-age').value),
-      gender: OnboardData.gender,
-      seeking: OnboardData.seeking,
+      gender: ChipState['gender'],
+      seeking: ChipState['seeking'],
       location_city: document.getElementById('ob-city').value.trim(),
       bio: document.getElementById('ob-bio').value.trim(),
       occupation: document.getElementById('ob-occupation').value.trim() || null,
-      marital_history: OnboardData.marital_history,
-      has_children: ChipState.has_children,
-      relationship_goal: OnboardData.relationship_goal,
-      interests: ChipState.interests || [],
+      marital_history: ChipState['marital_history'],
+      has_children: ChipState['has_children'],
+      relationship_goal: ChipState['relationship_goal'],
+      interests: ChipState['interests'] || [],
     };
     State.profile = await Api.createProfile(payload);
 
@@ -436,7 +436,7 @@ async function routeAfterAuth() {
 
 (async function init() {
   initChipGroups();
-  initOptionCards();
+//  initOptionCards();
   showObStep(1);
 
   const handledRedirect = await handleGoogleRedirect();
