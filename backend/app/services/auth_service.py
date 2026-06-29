@@ -89,6 +89,7 @@ class AuthService:
             email=data.email.lower(),
             password_hash=hash_password(data.password),
             email_verify_token=verify_token,
+            is_email_verified=True,   # ← auto-verify until SendGrid is configured
         )
         db.add(user)
         await db.commit()
