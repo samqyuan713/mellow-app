@@ -100,10 +100,10 @@ class Profile(Base):
             self.interests,
         ]
         filled = sum(1 for f in fields if f)
-        has_photos = 1 if self.photos else 0
-        total = len(fields) + 1
-        return round(((filled + has_photos) / total) * 100)
-
+#        has_photos = 1 if self.photos else 0
+#        total = len(fields) + 1
+#        return round(((filled + has_photos) / total) * 100)
+        return round((filled / len(fields)) * 100)
 
 class Photo(Base):
     __tablename__ = "photos"
