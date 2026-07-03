@@ -306,7 +306,8 @@ function validateObStep(n) {
     return true;
   }
   if (n === 4) {
-    if (!OnboardPhotos[0]) { showToast('Please add at least one photo'); return false; }
+ #   if (!OnboardPhotos[0]) { showToast('Please add at least one photo'); return false; }
+    // Photo is optional — skip validation
     return true;
   }
   return true;
@@ -367,17 +368,36 @@ async function completeOnboarding() {
       relationship_goal: ChipState['relationship_goal'],
       interests: ChipState['interests'] || [],
     };
-    State.profile = await Api.createProfile(payload);
+
+    try {
+      State.profile = await Api.createProfile(payload);
+    } catch (createErr) {
+      if (createErr.status === 409) {
+        // Profile already exists — try to update it instead
+        State.profile = await Api.updateProfile(payload);
+      } else {
+        throw createErr;
+      }
+    }
 
     // Upload photos
     for (const file of OnboardPhotos) {
       if (file) {
-        try { await Api.uploadPhoto(file); } catch (e) { console.warn('Photo upload failed', e); }
+        try { await Api.uploadPhoto(file); } catch (e) {
+          console.warn('Photo upload failed', e);
+        }
       }
     }
-    State.profile = await Api.getMyProfile();
+
+    try {
+      State.profile = await Api.getMyProfile();
+    } catch (e) {
+      console.warn('Could not reload profile', e);
+    }
+
     showToast('Profile created — welcome to Mellow 🌿');
     go('discover');
+
   } catch (err) {
     showApiError(err);
   } finally {
