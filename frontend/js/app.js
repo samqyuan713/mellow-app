@@ -306,7 +306,7 @@ function validateObStep(n) {
     return true;
   }
   if (n === 4) {
- #   if (!OnboardPhotos[0]) { showToast('Please add at least one photo'); return false; }
+ //   if (!OnboardPhotos[0]) { showToast('Please add at least one photo'); return false; }
     // Photo is optional — skip validation
     return true;
   }
