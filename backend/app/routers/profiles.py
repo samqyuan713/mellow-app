@@ -166,7 +166,7 @@ async def create_profile(
     return {**profile.__dict__, "completion_pct": profile.completion_percentage, "photos": []}
 
 
-@router.put("/me", response_model=ProfileResponse)
+@router.put("/me", status_code=200)
 async def update_profile(
     data: ProfileUpdateRequest,
     current_user: User = Depends(get_current_user),
@@ -174,32 +174,36 @@ async def update_profile(
 ):
     from sqlalchemy.orm import selectinload
 
+    # Find existing profile
     result = await db.execute(
         select(Profile)
         .options(selectinload(Profile.photos))
         .where(Profile.user_id == current_user.id)
     )
     profile = result.scalar_one_or_none()
-    if not profile:
-        raise HTTPException(status_code=404, detail="Profile not found")
 
+    if not profile:
+        raise HTTPException(
+            status_code=404,
+            detail="Profile not found"
+        )
+
+    # Update fields
     update_data = data.model_dump(exclude_none=True)
     for field, value in update_data.items():
-        setattr(profile, field, value)
+        if hasattr(profile, field):
+            setattr(profile, field, value)
 
     profile.updated_at = datetime.utcnow()
+    profile.profile_complete = True
     await db.commit()
+    await db.refresh(profile)
 
-    # Reload with photos
-    result = await db.execute(
-        select(Profile)
-        .options(selectinload(Profile.photos))
-        .where(Profile.id == profile.id)
-    )
-    profile = result.scalar_one()
+    logger.info(f"Profile updated for user {current_user.id}")
 
+    # Return response without accessing lazy relationships
     return {
-        "id":                profile.id,
+        "id":                str(profile.id),
         "first_name":        profile.first_name,
         "age":               profile.age,
         "gender":            profile.gender,
@@ -221,13 +225,11 @@ async def update_profile(
         "languages":         profile.languages or [],
         "is_visible":        profile.is_visible,
         "is_verified":       profile.is_verified,
-        "profile_complete":  True,
+        "profile_complete":  profile.profile_complete,
         "completion_pct":    80,
-        "photos":            [
-            PhotoResponse.model_validate(p) for p in profile.photos
-        ],
-        "last_active":       profile.last_active,
-        "created_at":        profile.created_at,
+        "photos":            [],
+        "last_active":       profile.last_active.isoformat() if profile.last_active else None,
+        "created_at":        profile.created_at.isoformat() if profile.created_at else None,
     }
 
 
