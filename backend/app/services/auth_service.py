@@ -95,7 +95,37 @@ class AuthService:
         await db.commit()
         await db.refresh(user)
         
+        # Load subscription separately since it was just created
+        result = await db.execute(
+            select(Subscription)
+            .where(Subscription.user_id == user.id)
+        )
+        user_subscription = result.scalar_one_or_none()
+
+        logger.info(f"New user registered: {user.email}")
+
+        # Build response manually without lazy loading
+        return AuthResponse(
+            user=UserResponse(
+                id=str(user.id),
+                email=user.email,
+                is_email_verified=user.is_email_verified,
+                role=user.role,
+                created_at=user.created_at,
+                has_profile=False,
+                subscription_plan=user_subscription.plan if user_subscription else "free",
+            ),
+            tokens=_build_tokens(user),
+            message="Account created! Welcome to Mellow."
+        )
+
+        # Auto-create free subscription
+        subscription = Subscription(user_id=user.id, plan="free")
+        db.add(subscription)
+        await db.commit()
+
         # Reload user with all relationships eagerly loaded
+        from sqlalchemy.orm import selectinload
         result = await db.execute(
             select(User)
             .options(
@@ -105,12 +135,6 @@ class AuthService:
             .where(User.id == user.id)
         )
         user = result.scalar_one()
-
-        # Auto-create free subscription
-        subscription = Subscription(user_id=user.id, plan="free")
-        db.add(subscription)
-        await db.commit()
-        await db.refresh(user)
 
         logger.info(f"New user registered: {user.email}")
 
