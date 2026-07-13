@@ -63,53 +63,53 @@ class AuthService:
     # ── Register ───────────────────────────────────────────────
     @staticmethod
     async def register(data: RegisterRequest, db: AsyncSession) -> AuthResponse:
-    # Check if email already exists
-    result = await db.execute(
-        select(User).where(
-            User.email == data.email.lower(),
-            User.deleted_at.is_(None)
+        # Check if email already exists
+        result = await db.execute(
+            select(User).where(
+                User.email == data.email.lower(),
+                User.deleted_at.is_(None)
+            )
         )
-    )
-    existing = result.scalar_one_or_none()
-    if existing:
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail="An account with this email already exists"
+        existing = result.scalar_one_or_none()
+        if existing:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="An account with this email already exists"
+            )
+
+        # Create user
+        verify_token = generate_secure_token(32)
+        user = User(
+            email=data.email.lower(),
+            password_hash=hash_password(data.password),
+            email_verify_token=verify_token,
+            is_email_verified=True,
         )
+        db.add(user)
+        await db.commit()
+        await db.refresh(user)
 
-    # Create user
-    verify_token = generate_secure_token(32)
-    user = User(
-        email=data.email.lower(),
-        password_hash=hash_password(data.password),
-        email_verify_token=verify_token,
-        is_email_verified=True,
-    )
-    db.add(user)
-    await db.commit()
-    await db.refresh(user)
+        # Create free subscription
+        subscription = Subscription(user_id=user.id, plan="free")
+        db.add(subscription)
+        await db.commit()
+        await db.refresh(subscription)
 
-    # Create free subscription
-    subscription = Subscription(user_id=user.id, plan="free")
-    db.add(subscription)
-    await db.commit()
-    await db.refresh(subscription)
+        logger.info(f"New user registered: {user.email}")
 
-    logger.info(f"New user registered: {user.email}")
-
-    return AuthResponse(
-        user=UserResponse(
-            id=str(user.id),
-            email=user.email,
-            is_email_verified=user.is_email_verified,
-            role=user.role,
-            created_at=user.created_at,
-            has_profile=False,
-            subscription_plan=subscription.plan,
-        ),
-        tokens=_build_tokens(user),
-        message="Account created! Welcome to Mellow."
-    )
+        return AuthResponse(
+            user=UserResponse(
+                id=str(user.id),
+                email=user.email,
+                is_email_verified=user.is_email_verified,
+                role=user.role,
+                created_at=user.created_at,
+                has_profile=False,
+                subscription_plan=subscription.plan,
+            ),
+            tokens=_build_tokens(user),
+            message="Account created! Welcome to Mellow."
+        )
 
     # ── Login ──────────────────────────────────────────────────
     @staticmethod
