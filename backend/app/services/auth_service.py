@@ -63,87 +63,53 @@ class AuthService:
     # ── Register ───────────────────────────────────────────────
     @staticmethod
     async def register(data: RegisterRequest, db: AsyncSession) -> AuthResponse:
-        # Check if email already exists
-        result = await db.execute(
-            select(User)
-            .options(
-                selectinload(User.profile),
-                selectinload(User.subscription)
-            )
-            .where(
-                User.email == data.email.lower(),
-                User.deleted_at.is_(None)
-            )
+    # Check if email already exists
+    result = await db.execute(
+        select(User).where(
+            User.email == data.email.lower(),
+            User.deleted_at.is_(None)
         )
-        user = result.scalar_one()
-        
-        if result.scalar_one_or_none():
-            raise HTTPException(
-                status_code=status.HTTP_409_CONFLICT,
-                detail="An account with this email already exists"
-            )
-
-        # Create user
-        verify_token = generate_secure_token(32)
-        user = User(
-            email=data.email.lower(),
-            password_hash=hash_password(data.password),
-            email_verify_token=verify_token,
-            is_email_verified=True,   # ← auto-verify until SendGrid is configured
-        )
-        db.add(user)
-        await db.commit()
-        await db.refresh(user)
-        
-        # Load subscription separately since it was just created
-        result = await db.execute(
-            select(Subscription)
-            .where(Subscription.user_id == user.id)
-        )
-        user_subscription = result.scalar_one_or_none()
-
-        logger.info(f"New user registered: {user.email}")
-
-        # Build response manually without lazy loading
-        return AuthResponse(
-            user=UserResponse(
-                id=str(user.id),
-                email=user.email,
-                is_email_verified=user.is_email_verified,
-                role=user.role,
-                created_at=user.created_at,
-                has_profile=False,
-                subscription_plan=user_subscription.plan if user_subscription else "free",
-            ),
-            tokens=_build_tokens(user),
-            message="Account created! Welcome to Mellow."
+    )
+    existing = result.scalar_one_or_none()
+    if existing:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="An account with this email already exists"
         )
 
-        # Auto-create free subscription
-        subscription = Subscription(user_id=user.id, plan="free")
-        db.add(subscription)
-        await db.commit()
+    # Create user
+    verify_token = generate_secure_token(32)
+    user = User(
+        email=data.email.lower(),
+        password_hash=hash_password(data.password),
+        email_verify_token=verify_token,
+        is_email_verified=True,
+    )
+    db.add(user)
+    await db.commit()
+    await db.refresh(user)
 
-        # Reload user with all relationships eagerly loaded
-        from sqlalchemy.orm import selectinload
-        result = await db.execute(
-            select(User)
-            .options(
-                selectinload(User.profile),
-                selectinload(User.subscription)
-            )
-            .where(User.id == user.id)
-        )
-        user = result.scalar_one()
+    # Create free subscription
+    subscription = Subscription(user_id=user.id, plan="free")
+    db.add(subscription)
+    await db.commit()
+    await db.refresh(subscription)
 
-        logger.info(f"New user registered: {user.email}")
+    logger.info(f"New user registered: {user.email}")
 
-        tokens = _build_tokens(user)
-        return AuthResponse(
-            user=_build_user_response(user),
-            tokens=tokens,
-            message="Account created! Please verify your email."
-        )
+    return AuthResponse(
+        user=UserResponse(
+            id=str(user.id),
+            email=user.email,
+            is_email_verified=user.is_email_verified,
+            role=user.role,
+            created_at=user.created_at,
+            has_profile=False,
+            subscription_plan=subscription.plan,
+        ),
+        tokens=_build_tokens(user),
+        message="Account created! Welcome to Mellow."
+    )
 
     # ── Login ──────────────────────────────────────────────────
     @staticmethod
