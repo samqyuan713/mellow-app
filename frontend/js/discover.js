@@ -284,29 +284,53 @@ distSlider.addEventListener('input', () => {
 });
 
 function openFiltersSheet() {
-  if (State.profile) {
-    ageMin.value = State.profile.pref_age_min ?? 35;
-    ageMax.value = State.profile.pref_age_max ?? 65;
-    distSlider.value = State.profile.pref_distance_km ?? 50;
-    document.getElementById('filter-age-min-val').textContent = ageMin.value;
-    document.getElementById('filter-age-max-val').textContent = ageMax.value;
-    document.getElementById('filter-distance-val').textContent = `${distSlider.value} km`;
-  }
+  // Load from State.profile if available
+  const minAge = State.profile?.pref_age_min || 35;
+  const maxAge = State.profile?.pref_age_max || 65;
+  const dist   = State.profile?.pref_distance_km || 50;
+
+  ageMin.value  = minAge;
+  ageMax.value  = maxAge;
+  distSlider.value = dist;
+
+  document.getElementById('filter-age-min-val').textContent  = minAge;
+  document.getElementById('filter-age-max-val').textContent  = maxAge;
+  document.getElementById('filter-distance-val').textContent = `${dist} km`;
+
   openSheet('sheet-filters');
 }
 document.getElementById('btn-filters').addEventListener('click', openFiltersSheet);
 document.getElementById('empty-adjust-filters').addEventListener('click', openFiltersSheet);
 
 document.getElementById('filter-apply').addEventListener('click', async () => {
-  const minV = parseInt(ageMin.value), maxV = parseInt(ageMax.value);
-  if (minV > maxV) { showToast('Minimum age should be less than maximum'); return; }
+  const minV = parseInt(ageMin.value);
+  const maxV = parseInt(ageMax.value);
+  const dist = parseInt(distSlider.value);
+
+  if (minV > maxV) { 
+    showToast('Minimum age should be less than maximum'); 
+    return; 
+  }
+
   showLoading(true);
   try {
-    State.profile = await Api.updateProfile({
-      pref_age_min: minV, pref_age_max: maxV, pref_distance_km: parseInt(distSlider.value),
+    // Save to State immediately for UI consistency
+    if (State.profile) {
+      State.profile.pref_age_min = minV;
+      State.profile.pref_age_max = maxV;
+      State.profile.pref_distance_km = dist;
+    }
+
+    // Save to backend
+    await Api.updateProfile({
+      pref_age_min: minV,
+      pref_age_max: maxV,
+      pref_distance_km: dist,
     });
+
     closeSheet('sheet-filters');
     feedQueue = [];
+    feedPage = 1;
     await loadDiscoverFeed();
     showToast('Preferences updated');
   } catch (err) {
