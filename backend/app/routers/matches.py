@@ -65,17 +65,32 @@ async def swipe_profile(
             )
         )
         daily = limit_result.scalar_one_or_none()
-        if daily and daily.swipes_used >= settings.FREE_DAILY_SWIPES:
-            raise HTTPException(
-                status_code=402,
-                detail=f"Daily swipe limit reached. Upgrade to Mellow for unlimited swiping!"
-            )
-        # Update counter
-        if not daily:
-            daily = DailyLimit(user_id=current_user.id)
-            db.add(daily)
-        daily.swipes_used += 1
 
+    # Create new daily limit record if doesn't exist
+    if not daily:
+        daily = DailyLimit(
+            user_id=current_user.id,
+            swipes_used=0,
+            messages_sent=0,
+            superlikes_used=0
+        )
+        db.add(daily)
+        await db.flush()  # get the record into session
+
+    # Ensure swipes_used is never None
+    if daily.swipes_used is None:
+        daily.swipes_used = 0
+
+    # Check limit
+    if daily.swipes_used >= settings.FREE_DAILY_SWIPES:
+        raise HTTPException(
+            status_code=402,
+            detail=f"You've used your {settings.FREE_DAILY_SWIPES} free swipes today. Upgrade to Mellow Premium for unlimited swiping!"
+        )
+
+    # Increment counter
+    daily.swipes_used += 1
+    
     # Record the swipe
     existing = await db.execute(
         select(Swipe).where(
