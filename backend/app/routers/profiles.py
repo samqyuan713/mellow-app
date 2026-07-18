@@ -401,13 +401,13 @@ async def upload_photo(
         upload_result = cloudinary.uploader.upload(
             content,
             folder=f"mellow/profiles/{profile.id}",
-            transformation=[
-                {"width": 800, "height": 1000, "crop": "fill", "gravity": "face"},
-                {"quality": "auto", "fetch_format": "auto"}
-            ],
-            eager=[
-                {"width": 200, "height": 200, "crop": "fill", "gravity": "face"}
-            ],
+        #    transformation=[
+        #        {"width": 800, "height": 1000, "crop": "fill", "gravity": "face"},
+        #        {"quality": "auto", "fetch_format": "auto"}
+        #    ],
+        #    eager=[
+        #        {"width": 200, "height": 200, "crop": "fill", "gravity": "face"}
+        #    ],
             # moderation="aws_rek",  ← removed, requires paid plan
             resource_type="image",
         )
@@ -421,7 +421,8 @@ async def upload_photo(
         profile_id=profile.id,
         cloudinary_id=upload_result["public_id"],
         url=upload_result["secure_url"],
-        thumbnail_url=upload_result.get("eager", [{}])[0].get("secure_url"),
+      #  thumbnail_url=upload_result.get("eager", [{}])[0].get("secure_url"),
+        thumbnail_url=upload_result.get("secure_url"),  # use same URL as thumbnail
         is_primary=is_first,
         sort_order=len(profile.photos),
     )
