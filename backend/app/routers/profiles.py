@@ -408,7 +408,8 @@ async def upload_photo(
             eager=[
                 {"width": 200, "height": 200, "crop": "fill", "gravity": "face"}
             ],
-            moderation="aws_rek",    # AI content moderation
+            # moderation="aws_rek",  ← removed, requires paid plan
+            resource_type="image",
         )
     except Exception as e:
         logger.error(f"Cloudinary upload failed: {e}")

@@ -55,8 +55,8 @@ class PhotoService:
             options["public_id"] = public_id
 
         # Enable AI moderation if Cloudinary plan supports it
-        if settings.CLOUDINARY_API_KEY:
-            options["moderation"] = "aws_rek"
+        # if settings.CLOUDINARY_API_KEY:
+        #    options["moderation"] = "aws_rek"
 
         try:
             result = cloudinary.uploader.upload(file_bytes, **options)
