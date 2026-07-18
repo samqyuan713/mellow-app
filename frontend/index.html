@@ -381,6 +381,13 @@
       </div>
       <div style="height:12px"></div>
     </div>
+    <div class="who-liked-section" id="who-liked-section" hidden>
+        <div style="padding:0 22px 8px;display:flex;justify-content:space-between;align-items:center">
+            <div class="nm-title">❤️ Liked your profile</div>
+            <span class="tiny" id="liked-count"></span>
+        </div>
+        <div class="matches-row" id="who-liked-row"></div>
+    </div>
     <div class="bottom-nav">
       <button class="nav-btn" data-nav="discover"><span class="nav-icon"><svg width="20" height="20"><use href="#i-flame"/></svg></span><span class="nav-label">Discover</span></button>
       <button class="nav-btn active" data-nav="matches"><span class="nav-icon"><svg width="20" height="20"><use href="#i-chat"/></svg></span><span class="nav-label">Messages</span></button>
@@ -465,6 +472,15 @@
             <div class="settings-desc">Age range and distance</div>
           </div>
           <span class="settings-chevron"><svg width="14" height="14"><use href="#i-chevron"/></svg></span>
+        </div>
+        <div class="settings-item" id="btn-reset-swipes">
+            <div class="settings-icon" style="background:var(--rose-light);color:var(--rose)">
+                <svg width="17" height="17"><use href="#i-rewind" /></svg>
+            </div>
+            <div class="settings-info">
+                <div class="settings-name">Reset Discovery</div>
+                <div class="settings-desc">Re-see all profiles you've passed on</div>
+            </div>
         </div>
       </div>
 

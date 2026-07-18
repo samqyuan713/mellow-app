@@ -281,3 +281,26 @@ async function startCheckout(planId) {
     showLoading(false);
   }
 }
+
+document.getElementById('btn-reset-swipes').addEventListener('click', async () => {
+  if (!confirm('This will reset your swipe history — all passed profiles will reappear. Continue?')) return;
+  showLoading(true);
+  try {
+    await fetch(
+      `${window.KINDRED_API_BASE}/api/v1/profiles/swipes/reset`,
+      {
+        method: 'DELETE',
+        headers: { 'Authorization': `Bearer ${Tokens.access}` }
+      }
+    );
+    // Clear local feed cache
+    feedQueue = [];
+    feedPage = 1;
+    showToast('Discovery reset — all profiles will reappear');
+    go('discover');
+  } catch (err) {
+    showApiError(err);
+  } finally {
+    showLoading(false);
+  }
+});

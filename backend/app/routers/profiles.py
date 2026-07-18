@@ -537,3 +537,24 @@ async def update_visibility(
     await db.commit()
     status_str = "visible" if data.is_visible else "hidden"
     return {"message": f"Profile is now {status_str}"}
+    
+    @router.delete("/swipes/reset")
+    async def reset_swipes(
+        current_user: User = Depends(get_current_user),
+        db: AsyncSession = Depends(get_db)
+    ):
+        """Reset all swipes — shows all profiles again in Discover."""
+        from sqlalchemy import delete as sql_delete
+
+        my_result = await db.execute(
+            select(Profile).where(Profile.user_id == current_user.id)
+        )
+        my_profile = my_result.scalar_one_or_none()
+        if not my_profile:
+            raise HTTPException(status_code=404, detail="Profile not found")
+
+        await db.execute(
+            sql_delete(Swipe).where(Swipe.swiper_id == my_profile.id)
+        )
+        await db.commit()
+        return {"message": "Swipes reset successfully"}

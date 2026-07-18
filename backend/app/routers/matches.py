@@ -598,3 +598,71 @@ async def unblock_user(
 router = matches_router   # used by matches prefix in main.py
 
 # Additional routers registered separately in main.py
+
+@matches_router.get("/liked-me")
+async def get_who_liked_me(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """
+    Get profiles that liked you.
+    Free in test mode — will be Premium only in production.
+    """
+    from sqlalchemy.orm import selectinload
+
+    # Get current user's profile
+    my_result = await db.execute(
+        select(Profile).where(Profile.user_id == current_user.id)
+    )
+    my_profile = my_result.scalar_one_or_none()
+    if not my_profile:
+        raise HTTPException(status_code=404, detail="Profile not found")
+
+    # Find all profiles that liked or superliked you
+    result = await db.execute(
+        select(Swipe)
+        .where(
+            Swipe.swiped_id == my_profile.id,
+            Swipe.direction.in_(["like", "superlike"])
+        )
+        .order_by(Swipe.created_at.desc())
+    )
+    swipes = result.scalars().all()
+
+    if not swipes:
+        return []
+
+    # Get their profiles
+    liker_ids = [s.swiper_id for s in swipes]
+    profiles_result = await db.execute(
+        select(Profile)
+        .options(selectinload(Profile.photos))
+        .where(Profile.id.in_(liker_ids))
+    )
+    profiles = profiles_result.scalars().all()
+
+    return [
+        {
+            "id":            str(p.id),
+            "first_name":    p.first_name,
+            "age":           p.age,
+            "occupation":    p.occupation,
+            "location_city": p.location_city,
+            "bio":           p.bio,
+            "photos": [
+                {
+                    "id":            str(ph.id),
+                    "url":           ph.url,
+                    "thumbnail_url": ph.thumbnail_url or ph.url,
+                    "is_primary":    ph.is_primary,
+                    "sort_order":    ph.sort_order,
+                }
+                for ph in sorted(p.photos, key=lambda x: x.sort_order)
+            ],
+            "swiped_direction": next(
+                (s.direction for s in swipes if s.swiper_id == p.id), "like"
+            ),
+        }
+        for p in profiles
+    ]
+

@@ -21,7 +21,10 @@ function avatarHtml(person) {
 async function loadMatches() {
   showLoading(true);
   try {
-    const matches = await Api.getMatches();
+    const [matches] = await Promise.all([
+      Api.getMatches(),
+      loadWhoLikedMe()   // ← add this
+    ]);
     renderMatches(matches);
   } catch (err) {
     showApiError(err);
@@ -295,3 +298,48 @@ document.getElementById('btn-submit-report').addEventListener('click', async () 
     showLoading(false);
   }
 });
+
+async function loadWhoLikedMe() {
+  try {
+    const response = await fetch(
+      `${window.KINDRED_API_BASE}/api/v1/matches/liked-me`,
+      { headers: { 'Authorization': `Bearer ${Tokens.access}` } }
+    );
+    const likers = await response.json();
+
+    const section = document.getElementById('who-liked-section');
+    const row = document.getElementById('who-liked-row');
+    const count = document.getElementById('liked-count');
+
+    if (!likers || likers.length === 0) {
+      section.hidden = true;
+      return;
+    }
+
+    section.hidden = false;
+    count.textContent = `${likers.length} people`;
+    row.innerHTML = '';
+
+    likers.forEach(p => {
+      const el = document.createElement('div');
+      el.className = 'new-match-item';
+      const photoUrl = p.photos?.[0]?.url;
+      el.innerHTML = `
+        <div class="new-match-ring">
+          ${photoUrl
+            ? `<img src="${photoUrl}" alt="${p.first_name}"/>`
+            : `<div class="ph">${p.first_name[0].toUpperCase()}</div>`}
+          ${p.swiped_direction === 'superlike'
+            ? '<div style="position:absolute;bottom:0;right:0;font-size:12px">⭐</div>'
+            : ''}
+        </div>
+        <div class="new-match-name">${p.first_name}, ${p.age}</div>`;
+      row.appendChild(el);
+    });
+
+  } catch (err) {
+    console.warn('Could not load who liked me:', err);
+  }
+}
+
+
