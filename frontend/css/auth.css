@@ -114,6 +114,7 @@
     overflow-y: auto;
     -webkit-overflow-scrolling: touch; /* smooth scroll on iOS/Android */
     padding: 16px 24px 80px; /* extra bottom padding for the footer */
+    min-height: 0; /* critical for flex scroll on mobile */
 }
 .onboard-foot {
     padding: 12px 24px calc(env(safe-area-inset-bottom, 0px) + 20px);
@@ -137,11 +138,15 @@
 }
 
 #screen-onboard .onboard-step {
-    display: flex;
+    display: none; /* hidden by default */
     flex-direction: column;
     flex: 1;
     overflow: hidden;
-    min-height: 0; /* critical for flex scroll on mobile */
+    min-height: 0;
+}
+
+#screen-onboard .onboard-step:not([hidden]) {
+    display: flex; /* show only active step */
 }
 
 .option-card {
