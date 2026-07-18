@@ -6,13 +6,18 @@
 // PROFILE SCREEN (view)
 // ════════════════════════════════════════════════════════════
 async function loadProfileScreen() {
+  showLoading(true);
   try {
-    if (!State.profile) State.profile = await Api.getMyProfile();
+    // Force fresh reload to get latest photos
+    State.profile = await Api.getMyProfile();
     if (!State.subscription) State.subscription = await Api.getMySubscription();
   } catch (err) {
     showApiError(err);
+    showLoading(false);
     return;
   }
+  showLoading(false);
+
   const p = State.profile;
 
   document.getElementById('profile-avatar').innerHTML = avatarHtml(p);

@@ -7,9 +7,14 @@ let chatSocket  = null;
 
 // ── Avatar helper ──────────────────────────────────────────────
 function avatarHtml(person) {
-  const url = person?.primary_photo?.url;
+  // Handle both profile object (has photos array) and match object (has primary_photo)
+  const url = person?.primary_photo?.url ||
+              person?.photos?.find(p => p.is_primary)?.url ||
+              person?.photos?.[0]?.url;
   const initial = (person?.first_name || '?')[0].toUpperCase();
-  return url ? `<img src="${url}" alt="${person.first_name}"/>` : initial;
+  return url
+    ? `<img src="${url}" alt="${person.first_name}" style="width:100%;height:100%;object-fit:cover;border-radius:inherit;"/>`
+    : initial;
 }
 
 // ── Load matches list ───────────────────────────────────────────

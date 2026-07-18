@@ -131,6 +131,8 @@ async def get_my_profile(
     current_user: User = Depends(get_current_verified_user),
     db: AsyncSession = Depends(get_db)
 ):
+    from sqlalchemy.orm import selectinload
+    
     """Get the current user's own profile."""
     result = await db.execute(
         select(Profile)
@@ -138,13 +140,49 @@ async def get_my_profile(
         .where(Profile.user_id == current_user.id)
     )
     profile = result.scalar_one_or_none()
+    
     if not profile:
         raise HTTPException(status_code=404, detail="Profile not found. Please create one.")
 
-    return {**profile.__dict__,
-            "completion_pct": profile.completion_percentage,
-            "photos": [PhotoResponse.model_validate(p) for p in profile.photos]}
-
+    return {
+        "id":                str(profile.id),
+        "first_name":        profile.first_name,
+        "age":               profile.age,
+        "gender":            profile.gender,
+        "seeking":           profile.seeking,
+        "bio":               profile.bio,
+        "occupation":        profile.occupation,
+        "education":         profile.education,
+        "height_cm":         profile.height_cm,
+        "location_city":     profile.location_city,
+        "location_country":  profile.location_country,
+        "marital_history":   profile.marital_history,
+        "has_children":      profile.has_children,
+        "wants_children":    profile.wants_children,
+        "relationship_goal": profile.relationship_goal,
+        "religion":          profile.religion,
+        "drinking":          profile.drinking,
+        "smoking":           profile.smoking,
+        "interests":         profile.interests or [],
+        "languages":         profile.languages or [],
+        "is_visible":        profile.is_visible,
+        "is_verified":       profile.is_verified,
+        "profile_complete":  profile.profile_complete,
+        "completion_pct":    profile.completion_percentage,
+        "photos": [
+            {
+                "id":            str(p.id),
+                "url":           p.url,
+                "thumbnail_url": p.thumbnail_url or p.url,
+                "is_primary":    p.is_primary,
+                "sort_order":    p.sort_order,
+            }
+            for p in sorted(profile.photos, key=lambda x: x.sort_order)
+            if p.is_approved
+        ],
+        "last_active":       profile.last_active.isoformat() if profile.last_active else None,
+        "created_at":        profile.created_at.isoformat() if profile.created_at else None,
+    }
 
 @router.post("/me", response_model=ProfileResponse, status_code=201)
 async def create_profile(
