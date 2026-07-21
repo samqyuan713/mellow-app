@@ -4,36 +4,37 @@
 # ══════════════════════════════════════════
 
 # Core Framework
-fastapi==0.109.0
-uvicorn[standard]==0.27.0
-python-multipart==0.0.6
+fastapi==0.115.0
+uvicorn[standard]==0.32.0
+python-multipart==0.0.12
 
 # Database
-sqlalchemy==2.0.25
-asyncpg==0.29.0
-alembic==1.13.1
-psycopg2-binary==2.9.9
+sqlalchemy==2.0.36
+asyncpg==0.30.0
+alembic==1.14.0
+psycopg2-binary==2.9.10
 
 # Auth & Security
 python-jose[cryptography]==3.3.0
 passlib[bcrypt]==1.7.4
 bcrypt==4.0.1
-httpx==0.26.0
+httpx==0.27.0
 
 # Validation
-pydantic==2.5.3
-pydantic-settings==2.1.0
-email-validator==2.1.0
-python-dotenv==1.0.0
+pydantic==2.9.2
+pydantic-settings==2.6.0
+email-validator==2.2.0
+python-dotenv==1.0.1
 
 # Photo Upload
-cloudinary==1.38.0
+cloudinary==1.41.0
+pillow==11.0.0
 
 # Payments
-stripe==7.12.0
+stripe==11.2.0
 
 # Email
 sendgrid==6.11.0
 
 # Utilities
-pytz==2024.1
+pytz==2024.2
