@@ -25,6 +25,7 @@ from app.schemas.match import (
     CheckoutSessionResponse, CustomerPortalResponse,
     SubscriptionResponse, PlanResponse, PlanFeatures,
 )
+from app.schemas.profile import PhotoResponse
 from app.middleware.auth_middleware import (
     get_current_user, get_current_verified_user,
     get_current_subscription, require_premium
@@ -323,10 +324,15 @@ async def get_messages(
         ),
         messages=[
             MessageResponse(
-                id=m.id, match_id=m.match_id, sender_id=m.sender_id,
-                content=m.content, message_type=m.message_type,
-                is_read=m.is_read, read_at=m.read_at, created_at=m.created_at,
-                is_mine=(m.sender_id == my_profile.id)
+                id=m.id,
+                match_id=m.match_id,
+                sender_id=m.sender_id,
+                content=m.content,
+                message_type=m.message_type,
+                is_read=m.is_read,
+                read_at=m.read_at,
+                created_at=m.created_at,
+                is_mine=(str(m.sender_id) == str(my_profile.id))
             ) for m in msgs
         ],
         total=len(msgs)

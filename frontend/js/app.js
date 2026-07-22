@@ -474,3 +474,124 @@ async function routeAfterAuth() {
     go('welcome', { skipHistory: true });
   }
 })();
+
+// ════════════════════════════════════════════════════════════
+// PROFILE DETAIL SHEET — accessible from all screens
+// ════════════════════════════════════════════════════════════
+async function openProfileDetail(profileId, showActions = false) {
+  showLoading(true);
+  try {
+    const response = await fetch(
+      `${window.KINDRED_API_BASE}/api/v1/profiles/${profileId}`,
+      { headers: { 'Authorization': `Bearer ${Tokens.access}` } }
+    );
+
+    if (!response.ok) {
+      throw new Error(`Profile fetch failed: ${response.status}`);
+    }
+
+    const profile = await response.json();
+    const photos = profile.photos || [];
+    const photoUrl = photos[0]?.url;
+    const initial = (profile.first_name || '?')[0].toUpperCase();
+
+    const content = document.getElementById('profile-detail-content');
+    const actions = document.getElementById('profile-detail-actions');
+
+    if (!content) {
+      console.error('profile-detail-content element not found');
+      showLoading(false);
+      return;
+    }
+
+    content.innerHTML = `
+      <div style="width:100%;height:260px;border-radius:16px;overflow:hidden;
+                  background:var(--cream-deep);margin-bottom:16px">
+        ${photoUrl
+          ? `<img src="${photoUrl}" alt="${profile.first_name}"
+               style="width:100%;height:100%;object-fit:cover"/>`
+          : `<div style="width:100%;height:100%;display:flex;align-items:center;
+                         justify-content:center;font-family:'Fraunces',serif;
+                         font-size:64px;color:var(--rose-light);background:var(--plum)">
+               ${initial}
+             </div>`}
+      </div>
+      <div style="font-family:'Fraunces',serif;font-size:26px;
+                  color:var(--plum);margin-bottom:4px">
+        ${profile.first_name}, ${profile.age}
+      </div>
+      <div style="font-size:13px;color:var(--ink-soft);margin-bottom:14px">
+        ${[profile.occupation, profile.location_city].filter(Boolean).join(' · ')}
+      </div>
+      ${profile.bio ? `
+        <p style="font-size:14px;color:var(--ink-soft);line-height:1.6;margin-bottom:14px">
+          ${profile.bio}
+        </p>` : ''}
+      <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:14px">
+        ${profile.relationship_goal ? `
+          <div style="display:flex;gap:8px">
+            <span style="font-size:12px;font-weight:600;color:var(--plum);min-width:80px">
+              Looking for:
+            </span>
+            <span style="font-size:12px;color:var(--ink-soft)">
+              ${profile.relationship_goal}
+            </span>
+          </div>` : ''}
+        ${profile.marital_history ? `
+          <div style="display:flex;gap:8px">
+            <span style="font-size:12px;font-weight:600;color:var(--plum);min-width:80px">
+              History:
+            </span>
+            <span style="font-size:12px;color:var(--ink-soft)">
+              ${profile.marital_history}
+            </span>
+          </div>` : ''}
+        ${profile.has_children ? `
+          <div style="display:flex;gap:8px">
+            <span style="font-size:12px;font-weight:600;color:var(--plum);min-width:80px">
+              Children:
+            </span>
+            <span style="font-size:12px;color:var(--ink-soft)">
+              ${profile.has_children}
+            </span>
+          </div>` : ''}
+      </div>
+      ${profile.interests?.length ? `
+        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px">
+          ${profile.interests.map(i => `
+            <span style="font-size:11px;padding:4px 12px;border-radius:20px;
+                         background:var(--cream-deep);color:var(--ink-soft)">
+              ${i}
+            </span>`).join('')}
+        </div>` : ''}
+    `;
+
+    // Action buttons
+    if (actions) {
+      actions.innerHTML = showActions ? `
+        <button class="btn btn-outline" style="flex:1" onclick="
+          closeSheet('sheet-profile-detail');
+          if(typeof handleSwipeById==='function') handleSwipeById('${profileId}','pass');
+        ">Pass</button>
+        <button class="btn btn-rose" style="flex:1" onclick="
+          closeSheet('sheet-profile-detail');
+          if(typeof handleSwipeById==='function') handleSwipeById('${profileId}','like');
+        ">💜 Like back</button>
+      ` : `
+        <button class="btn btn-primary" style="flex:1"
+          onclick="closeSheet('sheet-profile-detail')">
+          Close
+        </button>
+      `;
+    }
+
+    openSheet('sheet-profile-detail');
+
+  } catch (err) {
+    console.error('openProfileDetail error:', err);
+    showApiError(err);
+  } finally {
+    showLoading(false);
+  }
+}
+

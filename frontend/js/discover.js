@@ -125,9 +125,16 @@ function renderStack() {
 }
 
 // ── Load feed ──────────────────────────────────────────────────
-async function loadDiscoverFeed() {
-  if (feedQueue.length > 0) { renderStack(); return; }
-  feedPage = 1;
+async function loadDiscoverFeed(force = false) {
+  if (feedQueue.length > 0 && !force) { 
+    renderStack(); 
+    return; 
+  }
+  // Reset queue and page on force reload
+  if (force) {
+    feedQueue = [];
+    feedPage = 1;
+  }
   showLoading(true);
   try {
     feedQueue = await Api.discoverFeed(feedPage);
