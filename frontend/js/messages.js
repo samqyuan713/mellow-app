@@ -342,4 +342,99 @@ async function loadWhoLikedMe() {
   }
 }
 
+async function openProfileDetail(profileId, showActions = false, matchId = null) {
+  showLoading(true);
+  try {
+    const response = await fetch(
+      `${window.KINDRED_API_BASE}/api/v1/profiles/${profileId}`,
+      { headers: { 'Authorization': `Bearer ${Tokens.access}` } }
+    );
+    const profile = await response.json();
+
+    const content = document.getElementById('profile-detail-content');
+    const actions = document.getElementById('profile-detail-actions');
+
+    const photos = profile.photos || [];
+    const photoUrl = photos[0]?.url;
+    const initial = (profile.first_name || '?')[0].toUpperCase();
+
+    content.innerHTML = `
+      <div style="width:100%;height:240px;border-radius:16px;overflow:hidden;
+                  background:var(--cream-deep);margin-bottom:16px;position:relative">
+        ${photoUrl
+          ? `<img src="${photoUrl}" style="width:100%;height:100%;object-fit:cover"/>`
+          : `<div style="width:100%;height:100%;display:flex;align-items:center;
+                         justify-content:center;font-family:'Fraunces',serif;
+                         font-size:64px;color:var(--rose-light);background:var(--plum)">
+               ${initial}
+             </div>`}
+        ${photos.length > 1 ? `
+          <div style="position:absolute;bottom:10px;left:50%;transform:translateX(-50%);
+                      display:flex;gap:5px">
+            ${photos.map((_, i) => `
+              <div style="width:6px;height:6px;border-radius:50%;
+                          background:${i===0?'#fff':'rgba(255,255,255,.5)'}"></div>
+            `).join('')}
+          </div>` : ''}
+      </div>
+      <div style="font-family:'Fraunces',serif;font-size:24px;color:var(--plum);margin-bottom:4px">
+        ${profile.first_name}, ${profile.age}
+      </div>
+      <div style="font-size:13px;color:var(--ink-soft);margin-bottom:12px">
+        ${[profile.occupation, profile.location_city].filter(Boolean).join(' · ')}
+      </div>
+      ${profile.bio ? `
+        <p style="font-size:14px;color:var(--ink-soft);line-height:1.6;margin-bottom:14px">
+          ${profile.bio}
+        </p>` : ''}
+      ${profile.relationship_goal ? `
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+          <span style="font-size:12px;font-weight:600;color:var(--plum)">Looking for:</span>
+          <span style="font-size:12px;color:var(--ink-soft)">${profile.relationship_goal}</span>
+        </div>` : ''}
+      ${profile.marital_history ? `
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">
+          <span style="font-size:12px;font-weight:600;color:var(--plum)">History:</span>
+          <span style="font-size:12px;color:var(--ink-soft)">${profile.marital_history}</span>
+        </div>` : ''}
+      ${profile.interests?.length ? `
+        <div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:12px">
+          ${profile.interests.map(i => `
+            <span style="font-size:11px;padding:4px 10px;border-radius:20px;
+                         background:var(--cream-deep);color:var(--ink-soft)">
+              ${i}
+            </span>`).join('')}
+        </div>` : ''}
+    `;
+
+    // Action buttons
+    actions.innerHTML = '';
+    if (showActions && !matchId) {
+      // Like button for "who liked me" profiles
+      actions.innerHTML = `
+        <button class="btn btn-outline" style="flex:1"
+          onclick="closeSheet('sheet-profile-detail');handleSwipeById('${profileId}','pass')">
+          Pass
+        </button>
+        <button class="btn btn-rose" style="flex:1"
+          onclick="closeSheet('sheet-profile-detail');handleSwipeById('${profileId}','like')">
+          💜 Like back
+        </button>`;
+    } else if (matchId) {
+      actions.innerHTML = `
+        <button class="btn btn-primary" style="flex:1"
+          onclick="closeSheet('sheet-profile-detail')">
+          Close
+        </button>`;
+    }
+
+    openSheet('sheet-profile-detail');
+  } catch (err) {
+    showApiError(err);
+  } finally {
+    showLoading(false);
+  }
+}
+
+
 

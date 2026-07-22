@@ -83,6 +83,18 @@ function renderCard(profile, position) {
       photoEl.querySelectorAll('.dot').forEach((d, i) => d.classList.toggle('active', i === idx));
     });
   }
+
+    // Add tap on card body to open full profile
+    const cardBody = card.querySelector('.card-body');
+    if (cardBody) {
+      cardBody.addEventListener('click', (e) => {
+        e.stopPropagation();
+        if (typeof openProfileDetail === 'function') {
+          openProfileDetail(profile.id, false);
+        }
+      });
+    }
+
   return card;
 }
 
@@ -339,3 +351,19 @@ document.getElementById('filter-apply').addEventListener('click', async () => {
     showLoading(false);
   }
 });
+
+async function handleSwipeById(profileId, direction) {
+  try {
+    const res = await Api.swipe(profileId, direction);
+    if (res.matched) {
+      showMatchOverlay({ id: profileId, first_name: 'them', photos: [] }, res.match_id);
+    }
+    showToast(direction === 'like' ? '💜 Liked!' : 'Passed');
+    // Reload matches to reflect new match
+    if (res.matched) go('matches');
+  } catch (err) {
+    showApiError(err);
+  }
+}
+
+

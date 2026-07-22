@@ -358,18 +358,38 @@ async def discover_profiles(
     # Build discovery query with preference filters
     exclude_ids = swiped_ids + blocked_ids + [my_profile.id]
 
+    # Map seeking to gender value
+    # "men" → "man", "women" → "woman", "everyone" → no filter
+    sought_gender = None
+    if my_profile.seeking == "men":
+        sought_gender = "man"
+    elif my_profile.seeking == "women":
+        sought_gender = "woman"
+
+    # Build filter conditions
+    filter_conditions = [
+        Profile.id.not_in(exclude_ids) if exclude_ids else True,
+        Profile.is_visible == True,
+        Profile.user_id != current_user.id,
+    ]
+
+    # Age filter — only apply if preferences are set
+    if my_profile.pref_age_min:
+        filter_conditions.append(Profile.age >= my_profile.pref_age_min)
+    if my_profile.pref_age_max:
+        filter_conditions.append(Profile.age <= my_profile.pref_age_max)
+
+    # Gender filter — only apply if not seeking "everyone"
+    if sought_gender:
+        filter_conditions.append(Profile.gender == sought_gender)
+
+    # Remove profile_complete filter for now — show all visible profiles
+    # filter_conditions.append(Profile.profile_complete == True)
+
     query = (
         select(Profile)
         .options(selectinload(Profile.photos))
-        .where(
-            and_(
-                Profile.id.not_in(exclude_ids) if exclude_ids else True,
-                Profile.is_visible == True,
-                Profile.profile_complete == True,
-                Profile.age >= my_profile.pref_age_min,
-                Profile.age <= my_profile.pref_age_max,
-            )
-        )
+        .where(and_(*filter_conditions))
         .offset((page - 1) * limit)
         .limit(limit)
     )
