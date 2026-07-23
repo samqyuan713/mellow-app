@@ -479,7 +479,8 @@ async function routeAfterAuth() {
 // PROFILE DETAIL SHEET — accessible from all screens
 // ════════════════════════════════════════════════════════════
 async function openProfileDetail(profileId, showActions = false) {
-    showLoading(true);
+  showLoading(true);
+  try {
     const profile = await apiRequest(`/profiles/${profileId}`);
     const photos = profile.photos || [];
     const photoUrl = photos[0]?.url;
