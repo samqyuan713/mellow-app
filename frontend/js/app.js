@@ -479,18 +479,8 @@ async function routeAfterAuth() {
 // PROFILE DETAIL SHEET — accessible from all screens
 // ════════════════════════════════════════════════════════════
 async function openProfileDetail(profileId, showActions = false) {
-  showLoading(true);
-  try {
-    const response = await fetch(
-      `${window.KINDRED_API_BASE}/api/v1/profiles/${profileId}`,
-      { headers: { 'Authorization': `Bearer ${Tokens.access}` } }
-    );
-
-    if (!response.ok) {
-      throw new Error(`Profile fetch failed: ${response.status}`);
-    }
-
-    const profile = await response.json();
+    showLoading(true);
+    const profile = await apiRequest(`/profiles/${profileId}`);
     const photos = profile.photos || [];
     const photoUrl = photos[0]?.url;
     const initial = (profile.first_name || '?')[0].toUpperCase();

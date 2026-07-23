@@ -138,4 +138,7 @@ const Api = {
   connectChat(matchId) {
     return new WebSocket(`${WS_BASE}/ws/chat/${matchId}?token=${Tokens.access}`);
   },
+
+  // Add to Api object
+  getLikedMe: () => apiRequest('/matches/liked-me'),
 };

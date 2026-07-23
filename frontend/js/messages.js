@@ -301,11 +301,11 @@ document.getElementById('btn-submit-report').addEventListener('click', async () 
 
 async function loadWhoLikedMe() {
   try {
-    const response = await fetch(
-      `${window.KINDRED_API_BASE}/api/v1/matches/liked-me`,
-      { headers: { 'Authorization': `Bearer ${Tokens.access}` } }
-    );
-    const likers = await response.json();
+    const likers = await Api.getLikedMe();
+    if (!Array.isArray(likers)) {
+      console.warn('liked-me response is not array:', likers);
+      return;
+    }
 
     const section = document.getElementById('who-liked-section');
     const row = document.getElementById('who-liked-row');
@@ -325,7 +325,7 @@ async function loadWhoLikedMe() {
       el.className = 'new-match-item';
       const photoUrl = p.photos?.[0]?.url;
       el.innerHTML = `
-        <div class="new-match-ring">
+        <div class="new-match-ring" style="position:relative">
           ${photoUrl
             ? `<img src="${photoUrl}" alt="${p.first_name}"/>`
             : `<div class="ph">${p.first_name[0].toUpperCase()}</div>`}
@@ -334,6 +334,9 @@ async function loadWhoLikedMe() {
             : ''}
         </div>
         <div class="new-match-name">${p.first_name}, ${p.age}</div>`;
+
+      // ← Add click handler to open full profile
+      el.addEventListener('click', () => openProfileDetail(p.id, true));
       row.appendChild(el);
     });
 

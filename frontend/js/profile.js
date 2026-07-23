@@ -286,14 +286,7 @@ document.getElementById('btn-reset-swipes').addEventListener('click', async () =
   if (!confirm('Reset your swipe history? All passed profiles will reappear.')) return;
   showLoading(true);
   try {
-    const response = await fetch(
-      `${window.KINDRED_API_BASE}/api/v1/profiles/swipes/reset`,
-      {
-        method: 'DELETE',
-        headers: { 'Authorization': `Bearer ${Tokens.access}` }
-      }
-    );
-    const data = await response.json();
+    const data = await apiRequest('/profiles/swipes/reset', { method: 'DELETE' });
     showToast(data.message || 'Discovery reset!');
 
     // Reset frontend feed cache
