@@ -131,13 +131,19 @@ async function loadDiscoverFeed(force = false) {
     return; 
   }
   // Reset queue and page on force reload
-  if (force) {
+//  if (force) {
     feedQueue = [];
     feedPage = 1;
-  }
+    //  }
+
+  const empty = document.getElementById('discover-empty');
+  if (empty) empty.hidden = true;
+
   showLoading(true);
   try {
-    feedQueue = await Api.discoverFeed(feedPage);
+    const profiles = await Api.discoverFeed(feedPage);
+    feedQueue = Array.isArray(profiles) ? profiles : [];
+    console.log(`Discover feed loaded: ${feedQueue.length} profiles`);
   } catch (err) {
     if (err.status === 402) {
       showSwipeLimitEmpty(err.message);
