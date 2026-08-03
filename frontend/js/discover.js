@@ -65,6 +65,7 @@ function renderCard(profile, position) {
         ${profile.occupation && profile.location_city ? '<span class="dot-sep">·</span>' : ''}
         ${profile.location_city ? `<span>${profile.location_city}</span>` : ''}
         ${profile.marital_history ? `<span class="dot-sep">·</span><span>${capitalize(profile.marital_history)}</span>` : ''}
+        ${profile.distance_label ? `<span class="dot-sep">·</span><span>📍 ${profile.distance_label}</span>` : ''}
       </div>
       ${profile.bio ? `<p class="card-bio">${escapeHtml(profile.bio)}</p>` : ''}
       ${profile.interests?.length ? `<div class="card-tags">${profile.interests.slice(0, 4).map(t => `<span class="tag">${capitalize(t)}</span>`).join('')}</div>` : ''}

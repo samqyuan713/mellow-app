@@ -396,6 +396,7 @@ async function completeOnboarding() {
     }
 
     showToast('Profile created — welcome to Mellow 🌿');
+    requestLocationAndSave();
     go('discover');
 
   } catch (err) {
@@ -448,6 +449,7 @@ async function routeAfterAuth() {
     State.user = me;
     if (me.has_profile) {
       State.profile = await Api.getMyProfile();
+      requestLocationAndSave();
       go('discover', { skipHistory: true });
     } else {
       go('onboard', { skipHistory: true });
@@ -584,5 +586,33 @@ async function openProfileDetail(profileId, showActions = false) {
   } finally {
     showLoading(false);
   }
+}
+
+// ── GPS Location ──────────────────────────────────────────
+function requestLocationAndSave() {
+  if (!navigator.geolocation) {
+    console.log('Geolocation not supported by this browser');
+    return;
+  }
+
+  navigator.geolocation.getCurrentPosition(
+    async (position) => {
+      const { latitude, longitude } = position.coords;
+      try {
+        await Api.updateProfile({ latitude, longitude });
+        if (State.profile) {
+          State.profile.latitude = latitude;
+          State.profile.longitude = longitude;
+        }
+        console.log('Location saved:', latitude, longitude);
+      } catch (err) {
+        console.warn('Could not save location:', err);
+      }
+    },
+    (error) => {
+      console.log('Location permission denied or unavailable:', error.message);
+    },
+    { enableHighAccuracy: false, timeout: 10000, maximumAge: 300000 }
+  );
 }
 
