@@ -97,7 +97,7 @@ def compatibility_score(my_profile: Profile, candidate: Profile) -> int:
     return min(100, score)
 
 
-def profile_to_response(profile: Profile, score: int = None) -> dict:
+def profile_to_response(profile: Profile, score: int = None, distance_km: float = None) -> dict:
     photos = [
         PhotoResponse(
             id=p.id, url=p.url,
@@ -119,6 +119,8 @@ def profile_to_response(profile: Profile, score: int = None) -> dict:
         "interests":         profile.interests or [],
         "photos":            photos,
         "compatibility_score": score,
+        "distance_km":       round(distance_km, 1) if distance_km is not None else None,
+        "distance_label":    f"{round(distance_km)} km away" if distance_km is not None else None,
     }
 
 
@@ -381,10 +383,18 @@ async def discover_profiles(
     candidates = result.scalars().all()
 
     # Score and sort by compatibility
-    scored = [
-        profile_to_response(c, compatibility_score(my_profile, c))
-        for c in candidates
-    ]
+    scored = []
+    for c in candidates:
+        dist_km = None
+        if all([my_profile.latitude, my_profile.longitude,
+                c.latitude, c.longitude]):
+            dist_km = haversine_km(
+                my_profile.latitude, my_profile.longitude,
+                c.latitude, c.longitude
+            )
+        scored.append(
+            profile_to_response(c, compatibility_score(my_profile, c), dist_km)
+        )
     scored.sort(key=lambda x: x["compatibility_score"] or 0, reverse=True)
 
     return scored

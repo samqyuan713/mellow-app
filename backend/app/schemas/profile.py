@@ -31,6 +31,8 @@ class ProfileCreateRequest(BaseModel):
     height_cm:         Optional[int]   = None
     location_city:     Optional[str]   = None
     location_country:  Optional[str]   = None
+    latitude:          Optional[float] = None
+    longitude:         Optional[float] = None
     marital_history:   Optional[str]   = None
     has_children:      Optional[str]   = None
     wants_children:    Optional[str]   = None
