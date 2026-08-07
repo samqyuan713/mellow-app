@@ -112,6 +112,7 @@ async def swipe_profile(
     # Check for mutual like → create match
     matched = False
     match_id = None
+
     if data.direction in ("like", "superlike"):
         mutual = await db.execute(
             select(Swipe).where(
@@ -120,35 +121,33 @@ async def swipe_profile(
                 Swipe.direction.in_(["like", "superlike"])
             )
         )
-    if mutual.scalar_one_or_none():
-        p1, p2 = sorted([str(my_profile.id), str(data.profile_id)])
-        
-    # Check if match already exists
-    existing_match = await db.execute(
-        select(Match).where(
-            Match.profile_1_id == UUID(p1),
-            Match.profile_2_id == UUID(p2)
-        )
-    )
-    existing = existing_match.scalar_one_or_none()
-    
-    if existing:
-        # Reactivate existing match
-        existing.is_active = True
-        match_id = existing.id
-        matched = True
-        logger.info(f"Match reactivated: {p1} ↔ {p2}")
-    else:
-        # Create new match
-        match = Match(
-            profile_1_id=UUID(p1),
-            profile_2_id=UUID(p2)
-        )
-        db.add(match)
-        await db.flush()
-        match_id = match.id
-        matched = True
-        logger.info(f"Match created: {p1} ↔ {p2}")
+        if mutual.scalar_one_or_none():
+            p1, p2 = sorted([str(my_profile.id), str(data.profile_id)])
+
+            # Check if match already exists
+            existing_match = await db.execute(
+                select(Match).where(
+                    Match.profile_1_id == UUID(p1),
+                    Match.profile_2_id == UUID(p2)
+                )
+            )
+            existing = existing_match.scalar_one_or_none()
+
+            if existing:
+                existing.is_active = True
+                match_id = existing.id
+                matched = True
+                logger.info(f"Match reactivated: {p1} ↔ {p2}")
+            else:
+                match = Match(
+                    profile_1_id=UUID(p1),
+                    profile_2_id=UUID(p2)
+                )
+                db.add(match)
+                await db.flush()
+                match_id = match.id
+                matched = True
+                logger.info(f"Match created: {p1} ↔ {p2}")
     
     await db.commit()
     return SwipeResponse(
