@@ -569,8 +569,17 @@ async def reset_swipes(
     await db.execute(
         sql_delete(Swipe).where(Swipe.swiper_id == my_profile.id)
     )
+    
+    # Also reset today's daily limit for testing convenience
+    await db.execute(
+        sql_delete(DailyLimit).where(
+            DailyLimit.user_id == current_user.id,
+            DailyLimit.date == date_type.today()
+        )
+    )
+
     await db.commit()
-    return {"message": "Swipes reset successfully"}
+    return {"message": "Discovery reset — all profiles will reappear"}
     
 @router.get("/{profile_id}", response_model=DiscoverCardResponse)
 async def get_profile_by_id(
