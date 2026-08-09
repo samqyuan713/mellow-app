@@ -556,7 +556,8 @@ async def reset_swipes(
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
-    """Reset all swipes — shows all profiles again in Discover."""
+    """Reset all swipes and daily limit — shows all profiles again in Discover."""
+    import datetime as dt
     from sqlalchemy import delete as sql_delete
 
     my_result = await db.execute(
@@ -569,12 +570,12 @@ async def reset_swipes(
     await db.execute(
         sql_delete(Swipe).where(Swipe.swiper_id == my_profile.id)
     )
-    
+
     # Also reset today's daily limit for testing convenience
     await db.execute(
         sql_delete(DailyLimit).where(
             DailyLimit.user_id == current_user.id,
-            DailyLimit.date == date_type.today()
+            DailyLimit.date == dt.date.today()
         )
     )
 
