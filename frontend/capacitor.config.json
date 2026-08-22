@@ -1,0 +1,9 @@
+﻿{
+  "appId": "com.mellow.app",
+  "appName": "Mellow",
+  "webDir": ".",
+  "server": {
+    "url": "https://mellow-app-lyart.vercel.app",
+    "cleartext": false
+  }
+}
