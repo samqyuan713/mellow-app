@@ -29,6 +29,10 @@ jobs:
       - name: Install frontend dependencies
         working-directory: frontend
         run: npm install
+
+       - name: Create empty webDir placeholder
+        working-directory: frontend
+        run: mkdir -p www && echo "<html><body>Mellow</body></html>" > www/index.html
  
       # ── Generate the native Android project fresh every run ──
       # This means android/ never needs to be committed to git —
