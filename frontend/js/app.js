@@ -483,7 +483,7 @@ async function routeAfterAuth() {
 async function openProfileDetail(profileId, showActions = false) {
   showLoading(true);
   try {
-    const profile = await apiRequest(`/profiles/${profileId}`);
+    const profile = await fetchProfileWithRetry(profileId);
     const photos = profile.photos || [];
     const photoUrl = photos[0]?.url;
     const initial = (profile.first_name || '?')[0].toUpperCase();
@@ -586,6 +586,24 @@ async function openProfileDetail(profileId, showActions = false) {
   } finally {
     showLoading(false);
   }
+}
+
+// ── Retry helper — masks transient cold-start / network hiccups ──
+async function fetchProfileWithRetry(profileId, maxRetries = 2) {
+  let lastError;
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      return await apiRequest(`/profiles/${profileId}`);
+    } catch (err) {
+      lastError = err;
+      console.warn(`Profile fetch attempt ${attempt + 1} failed:`, err.message);
+      if (attempt < maxRetries) {
+        // Brief pause before retrying — gives a cold server a moment to finish waking up
+        await new Promise(resolve => setTimeout(resolve, 800));
+      }
+    }
+  }
+  throw lastError;
 }
 
 // ── GPS Location ──────────────────────────────────────────
