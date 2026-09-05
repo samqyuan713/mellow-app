@@ -38,6 +38,14 @@ jobs:
         working-directory: frontend
         run: npx cap add android
 
+      - name: Install Capacitor Assets generator
+        working-directory: frontend
+        run: npm install @capacitor/assets --save-dev
+
+      - name: Generate Android icons from source
+        working-directory: frontend
+        run: npx capacitor-assets generate --android
+        
       - name: Sync web assets into Android project
         working-directory: frontend
         run: npx cap sync android
