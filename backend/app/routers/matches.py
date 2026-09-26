@@ -150,6 +150,35 @@ async def swipe_profile(
                 logger.info(f"Match created: {p1} ↔ {p2}")
     
     await db.commit()
+    
+    # Send match notification emails (best-effort — don't block response on failure)
+    if matched:
+        try:
+            from app.services.email_service import EmailService
+            from app.models.profile import Profile as ProfileModel
+
+            # Get both users' emails and names
+            other_profile_result = await db.execute(
+                select(Profile).where(Profile.id == data.profile_id)
+            )
+            other_profile = other_profile_result.scalar_one_or_none()
+
+            if other_profile:
+                other_user_result = await db.execute(
+                    select(User).where(User.id == other_profile.user_id)
+                )
+                other_user = other_user_result.scalar_one_or_none()
+
+                if other_user:
+                    await EmailService.send_match_notification(
+                        other_user.email, my_profile.first_name
+                    )
+                await EmailService.send_match_notification(
+                    current_user.email, other_profile.first_name
+                )
+        except Exception as e:
+            logger.warning(f"Match notification email failed (non-blocking): {e}")
+                
     return SwipeResponse(
         matched=matched,
         match_id=match_id,

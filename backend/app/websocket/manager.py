@@ -116,11 +116,22 @@ async def websocket_chat(
             msg_type = data.get("type")
 
             if msg_type == "message":
+                import re
+                _EMAIL_PATTERN = re.compile(r'[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}')
+                _PHONE_PATTERN = re.compile(r'(\+?\d[\d\s\-\(\)]{7,}\d)')
+
                 content = data.get("content", "").strip()
                 if not content or len(content) > 1000:
                     await websocket.send_json({
                         "type": "error",
                         "message": "Message content is required and must be under 1000 characters"
+                    })
+                    continue
+
+                if _EMAIL_PATTERN.search(content) or _PHONE_PATTERN.search(content):
+                    await websocket.send_json({
+                        "type": "error",
+                        "message": "For your safety, please don't share contact details in chat yet."
                     })
                     continue
 

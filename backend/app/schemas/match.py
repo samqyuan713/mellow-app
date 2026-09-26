@@ -56,6 +56,16 @@ class MatchResponse(BaseModel):
 # MESSAGE SCHEMAS
 # ══════════════════════════════════════════
 
+import re
+
+# Patterns that catch common ways people share off-platform contact info
+_EMAIL_PATTERN = re.compile(r'[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}')
+_PHONE_PATTERN = re.compile(r'(\+?\d[\d\s\-\(\)]{7,}\d)')
+_SOCIAL_PATTERN = re.compile(
+    r'\b(whatsapp|telegram|instagram|insta|ig|snapchat|snap|wechat|line\s?id|kik)\b',
+    re.IGNORECASE
+)
+
 class SendMessageRequest(BaseModel):
     content:      str
     message_type: str = "text"
@@ -68,6 +78,22 @@ class SendMessageRequest(BaseModel):
             raise ValueError("Message cannot be empty")
         if len(v) > 1000:
             raise ValueError("Message must be under 1000 characters")
+
+        if _EMAIL_PATTERN.search(v):
+            raise ValueError(
+                "For your safety, please don't share email addresses in chat. "
+                "Get to know each other here first."
+            )
+        if _PHONE_PATTERN.search(v):
+            raise ValueError(
+                "For your safety, please don't share phone numbers in chat. "
+                "Get to know each other here first."
+            )
+        if _SOCIAL_PATTERN.search(v):
+            raise ValueError(
+                "For your safety, please don't share social media handles in chat yet. "
+                "Get to know each other here first."
+            )
         return v
 
 
