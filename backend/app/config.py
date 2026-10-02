@@ -45,7 +45,8 @@ class Settings(BaseSettings):
 
     # ── SendGrid ───────────────────────────────────────────────
     SENDGRID_API_KEY: str = ""
-    FROM_EMAIL: str = "hello@mellow.app"
+    RESEND_API_KEY: str = "re_gMH1CvK1_GaWFn21P3ecTmi9FuAJosdAD"
+    FROM_EMAIL: str = "onboarding@resend.dev"
     FROM_NAME: str = "Mellow"
 
     # ── Twilio ─────────────────────────────────────────────────
