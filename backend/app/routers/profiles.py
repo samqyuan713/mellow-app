@@ -209,7 +209,7 @@ async def create_profile(
 @router.put("/me", status_code=200)
 async def update_profile(
     data: ProfileUpdateRequest,
-    current_user: User = Depends(get_current_user),
+    current_user: User = Depends(get_current_verified_user),
     db: AsyncSession = Depends(get_db)
 ):
     from sqlalchemy.orm import selectinload
