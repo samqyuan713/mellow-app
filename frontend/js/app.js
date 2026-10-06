@@ -400,7 +400,11 @@ async function completeOnboarding() {
     go('discover');
 
   } catch (err) {
-    showApiError(err);
+    if (err.status === 403) {
+        showToast('Please check your email and verify your account first.', true);
+    } else {
+        showApiError(err);
+    }
   } finally {
     showLoading(false);
   }
@@ -464,6 +468,9 @@ async function routeAfterAuth() {
   initChipGroups();
   initOptionCards();
   showObStep(1);
+
+  const handledVerify = await handleEmailVerificationLink();
+  if (handledVerify) return;
 
   const handledRedirect = await handleGoogleRedirect();
   if (handledRedirect) return;

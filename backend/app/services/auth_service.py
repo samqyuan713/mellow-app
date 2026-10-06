@@ -83,7 +83,7 @@ class AuthService:
             email=data.email.lower(),
             password_hash=hash_password(data.password),
             email_verify_token=verify_token,
-            is_email_verified=True,
+            is_email_verified=False,
         )
         db.add(user)
         await db.commit()
@@ -94,7 +94,14 @@ class AuthService:
         db.add(subscription)
         await db.commit()
         await db.refresh(subscription)
-
+        
+        # Send verification email (best-effort — don't block registration on failure)
+        try:
+            from app.services.email_service import EmailService
+            await EmailService.send_verification_email(user.email, verify_token)
+        except Exception as e:
+            logger.warning(f"Verification email failed to send (non-blocking): {e}")        
+            
         logger.info(f"New user registered: {user.email}")
 
         return AuthResponse(
