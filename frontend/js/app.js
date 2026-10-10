@@ -401,7 +401,8 @@ async function completeOnboarding() {
 
   } catch (err) {
     if (err.status === 403) {
-        showToast('Please check your email and verify your account first.', true);
+        showToast('Please verify your email first.', true);
+        document.getElementById('verify-banner').hidden = false;
     } else {
         showApiError(err);
     }
@@ -430,6 +431,18 @@ document.getElementById('btn-delete-account').addEventListener('click', async ()
     Tokens.clear();
     showToast('Your account has been deleted');
     go('welcome', { skipHistory: true });
+  } catch (err) {
+    showApiError(err);
+  } finally {
+    showLoading(false);
+  }
+});
+
+document.getElementById('btn-resend-verify').addEventListener('click', async () => {
+  showLoading(true);
+  try {
+    await Api.resendVerification();
+    showToast('Verification email sent. Check your inbox.');
   } catch (err) {
     showApiError(err);
   } finally {

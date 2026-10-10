@@ -17,6 +17,9 @@ from app.services.auth_service import AuthService
 from app.middleware.auth_middleware import get_current_user
 from app.models.user import User
 
+from app.utils.security import generate_secure_token
+from app.services.email_service import EmailService
+
 router = APIRouter()
 
 
@@ -82,3 +85,19 @@ async def logout(current_user: User = Depends(get_current_user)):
     In production, add token to a Redis blocklist here.
     """
     return {"message": "Logged out successfully"}
+    
+@router.post("/resend-verification")
+async def resend_verification(
+    current_user: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db)
+):
+    """Generate a fresh verification token and email it again."""
+    if current_user.is_email_verified:
+        return {"message": "Email already verified"}
+
+    token = generate_secure_token(32)
+    current_user.email_verify_token = token
+    await db.commit()
+
+    await EmailService.send_verification_email(current_user.email, token)
+    return {"message": "Verification email sent"}

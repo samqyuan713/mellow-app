@@ -141,4 +141,6 @@ const Api = {
 
   // Add to Api object
   getLikedMe: () => apiRequest('/matches/liked-me'),
+
+resendVerification: () => apiRequest('/auth/resend-verification', { method: 'POST' }),
 };
