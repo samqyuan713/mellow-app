@@ -464,6 +464,10 @@ async function routeAfterAuth() {
   try {
     const me = await Api.me();
     State.user = me;
+    // unverified users see the banner
+    const banner = document.getElementById('verify-banner');
+    if (banner) banner.hidden = !!me.is_email_verified;
+
     if (me.has_profile) {
       State.profile = await Api.getMyProfile();
       requestLocationAndSave();
@@ -472,8 +476,11 @@ async function routeAfterAuth() {
       go('onboard', { skipHistory: true });
     }
   } catch (err) {
-    Tokens.clear();
-    go('welcome', { skipHistory: true });
+    if (err.status === 401) {
+      Tokens.clear();
+      go('welcome', { skipHistory: true });
+    } else {
+      showApiError(err);
   }
 }
 

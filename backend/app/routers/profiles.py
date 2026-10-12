@@ -130,7 +130,7 @@ def profile_to_response(profile: Profile, score: int = None, distance_km: float 
 
 @router.get("/me", response_model=ProfileResponse)
 async def get_my_profile(
-    current_user: User = Depends(get_current_verified_user),
+    current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
     from sqlalchemy.orm import selectinload
